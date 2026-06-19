@@ -100,7 +100,10 @@ learning-muCMZ/
 ├── lakefile.toml         Mathlib dependency
 ├── lean-toolchain        leanprover/lean4:v4.22.0
 ├── MuCMZ.lean            library root (each primitive gets a module under MuCMZ/)
-└── resources/
+├── notes/                worklog and study notes (tracked)
+│   └── journal.md
+├── doc/                  reserved for Verso/blueprint docs (later)
+└── resources/            paper PDF (untracked, local only)
 ```
 
 ## Progress
