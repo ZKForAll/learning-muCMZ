@@ -89,7 +89,9 @@ many powers are given, and its advantage is $Adv^{q-dl}_{GrGen,A}(λ)$.
 The extra powers help an attacker. In plain DL there is one clue, x•g, and the
 best general method tries counts until one matches, about $\sqrt{p}$ attempts. The powers
 all come from the same x, so they are related, and that relatedness is leverage a
-single point does not give. The concrete payoff is Cheon's attack. When q divides
+single point does not give. The concrete payoff is Cheon's attack
+([Cheon, EUROCRYPT 2006](https://www.iacr.org/archive/eurocrypt2006/40040001/40040001.pdf)).
+When q divides
 p − 1, having x•g together with $x^q•g$ lets the attacker split the one big search
 into two smaller ones and recover x in about $\sqrt{\frac{p}{q}}$ steps instead of
 $\sqrt{p}$, roughly $\sqrt{q}$ times faster, a loss of about half the bits of q.
