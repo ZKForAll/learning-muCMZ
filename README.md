@@ -106,8 +106,14 @@ learning-muCMZ/
 │   ├── notes.md          study notes, the project deliverable
 │   └── journal.md        design-decision & rationale log
 ├── doc/                  reserved for Verso/blueprint docs (later)
+├── scripts/              tooling
+│   └── check-notes-lean.py   type-checks every ```lean block in notes/
 └── resources/            paper PDF (untracked, local only)
 ```
+
+Run `python3 scripts/check-notes-lean.py` to type-check every ```lean block in
+the notes. It extracts the blocks, concatenates them under a Mathlib preamble,
+and runs `lake env lean`.
 
 ## Progress
 
