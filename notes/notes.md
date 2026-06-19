@@ -220,3 +220,33 @@ which justifies key sizes. The GGM forbids using the representation, while the A
 allows it but requires the attacker to output it, so the GGM is the more
 idealized model and its proofs can miss attacks that exploit the real encoding,
 such as index calculus on multiplicative groups.
+
+## 4. Algebraic message authentication codes (O24 §3.2)
+
+A message authentication code (MAC) authenticates a message. The same secret key
+produces the MAC and verifies it. A signature instead verifies with a public key,
+and only its private key produces it. A keyed-verification credential makes the
+issuer and the verifier the same party, so a MAC suffices and the scheme avoids
+pairings. "Algebraic" means the construction uses only group and scalar
+operations, so the user can later prove possession of a MAC in zero knowledge.
+
+Definition 3.1 gives a MAC as four algorithms, MAC = (S, K, M, V). Setup
+S(1^λ, n) fixes the security level and the number of attributes n and outputs
+public parameters. Key generation K produces a secret key sk and public
+parameters pp, and the issuer holds sk. The MAC algorithm M(sk, m⃗) takes the
+secret key and attributes m⃗ = (m₁, …, mₙ) and outputs a tag σ, the credential on
+those attributes. Verification V(sk, m⃗, σ) returns 1 when the tag is valid and
+needs sk, which is the keyed part.
+
+A MAC must satisfy correctness and unforgeability. Correctness means an honestly
+produced tag always verifies. Unforgeability means no efficient attacker produces
+a valid tag on a fresh attribute list. The paper uses UF-CMVA, unforgeability
+under a chosen-message-and-verification attack (Figure 5), where the attacker
+calls a Sign oracle for tags on chosen attributes and a Verify oracle to test
+tags. The Verify oracle grants real power, because the secret key both signs and
+checks. UF-CMVA is a notion, not a proof model, and a proof reaches it for a
+concrete scheme in the generic or algebraic group model.
+
+Remark 3.2 notes that algebraic MACs are randomized. You can de-randomize them in
+the random oracle model by deriving the randomness from H(m⃗), so the same
+attributes always yield the same tag.
