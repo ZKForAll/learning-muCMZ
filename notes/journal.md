@@ -1,7 +1,8 @@
-# learning-μCMZ — journal
+# learning-μCMZ — journal (design decisions & rationale)
 
-A worklog for this hands-on study of the μCMZ primitives (Orrù 2024, ePrint
-2024/1552). ISO-dated entries, newest appended at the bottom.
+The internal "why" record: design and formalization decisions, with enough
+context to backtrack or explain choices later. ISO-dated entries, newest appended
+at the bottom. The reportable study notes live in [`notes.md`](notes.md).
 
 ---
 
