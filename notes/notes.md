@@ -77,3 +77,21 @@ the two cases, which is zero for a coin flip. An assumption holds when the
 advantage stays negligible as p and λ grow (negligible means that as the sizes
 grow the advantage drops to practically nothing, far too small for any real
 attacker to exploit).
+
+### 2.4 q-discrete logarithm (q-DL)
+
+q-DL strengthens DL by handing the attacker a sequence built from powers of the
+secret. A secret count x is chosen and the attacker is shown g, x•g, x²•g, up to
+x^q•g, the generator stepped by x, by x squared, and so on to the q-th power.
+Even with this sequence, recovering x is assumed infeasible. The number q is how
+many powers are given, and its advantage is Adv^{q-dl}_{GrGen,A}(λ).
+
+The extra powers help an attacker. In plain DL there is one clue, x•g, and the
+best general method tries counts until one matches, about √p attempts. The powers
+all come from the same x, so they are related, and that relatedness is leverage a
+single point does not give. The concrete payoff is Cheon's attack. When q divides
+p − 1, having x•g together with x^q•g lets the attacker split the one big search
+into two smaller ones and recover x in about √(p/q) steps instead of √p, roughly
+√q times faster, a loss of about half the bits of q. So a larger q makes the
+attacker's job easier and the assumption weaker, which is why q is kept as small
+as the application allows.
