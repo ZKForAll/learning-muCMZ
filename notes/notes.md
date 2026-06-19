@@ -204,3 +204,19 @@ prover more than the standard model, where the attacker supplies no
 representation, and less than the generic group model, where the attacker cannot
 use the group's representation at all. O24 proves μCMZ and μBBS in the AGM, so the
 guarantees cover algebraic attackers.
+
+### 3.7 Generic group model (GGM)
+
+The GGM is a proof model, not a hardness assumption
+([Shoup, EUROCRYPT 1997](https://link.springer.com/chapter/10.1007/3-540-69053-0_18)).
+The attacker never sees the real group elements. It receives only random labels
+for them and combines them through an oracle that performs the group operation,
+handing the oracle two labels and receiving the label of their sum. The labels
+carry no structure, so the attacker cannot use the representation of the group.
+
+This restriction lets one prove lower bounds. Shoup showed that any generic
+attacker needs about $\sqrt{p}$ group operations to compute a discrete logarithm,
+which justifies key sizes. The GGM forbids using the representation, while the AGM
+allows it but requires the attacker to output it, so the GGM is the more
+idealized model and its proofs can miss attacks that exploit the real encoding,
+such as index calculus on multiplicative groups.
