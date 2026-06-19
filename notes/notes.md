@@ -63,6 +63,24 @@ concrete instance, a mod-p group or an elliptic curve, without touching the
 protocol or its proofs. We do exactly this below, stating the primitives over an
 abstract prime-order group and instantiating it with a Schnorr group.
 
+### 1.3 On hardness assumptions
+
+A hardness assumption is a conjecture, not a theorem. A designer picks a problem
+that runs easily one way and resists undoing, like the discrete logarithm or
+factoring, and conjectures that no efficient algorithm solves it. Nobody proves
+this, because a proof would have to rule out every possible fast algorithm.
+
+Attacks test the assumption rather than create it. Cryptanalysts attack the
+problem for years, the best algorithm they find fixes the key sizes, and long
+survival builds confidence. A successful attack weakens or refutes the assumption
+and forces larger parameters or a new design. Cheon's attack is one such case
+([Cheon, EUROCRYPT 2006](https://www.iacr.org/archive/eurocrypt2006/40040001/40040001.pdf)),
+which weakened the q-type assumptions and explains why we keep q small.
+
+New schemes introduce new assumptions with extra structure, like DDH, q-DL, or
+gap-DL. A designer states the weakest assumption the proof needs, and a security
+proof reduces breaking the scheme to solving that problem.
+
 ## 2. The prime-order group (O24 §3)
 
 Everything in μCMZ sits on one object, a group 𝔾. Picture a fixed collection of
