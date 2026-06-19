@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Type-check the notes' Lean blocks before a commit that touches notes/.
+set -euo pipefail
+root="$(git rev-parse --show-toplevel)"
+if git diff --cached --name-only --diff-filter=ACM | grep -qE '^notes/.*\.md$'; then
+  echo "pre-commit: type-checking notes' Lean blocks"
+  if ! python3 "$root/scripts/check-notes-lean.py"; then
+    echo "pre-commit: notes Lean type-check failed (bypass with --no-verify)" >&2
+    exit 1
+  fi
+fi
