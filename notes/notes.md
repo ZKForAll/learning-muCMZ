@@ -84,7 +84,7 @@ q-DL strengthens DL by handing the attacker a sequence built from powers of the
 secret. A secret count x is chosen and the attacker is shown g, x•g, x²•g, up to
 x^q•g, the generator stepped by x, by x squared, and so on to the q-th power.
 Even with this sequence, recovering x is assumed infeasible. The number q is how
-many powers are given, and its advantage is Adv^{q-dl}_{GrGen,A}(λ).
+many powers are given, and its advantage is $Adv^{q-dl}_{GrGen,A}(λ)$.
 
 The extra powers help an attacker. In plain DL there is one clue, x•g, and the
 best general method tries counts until one matches, about √p attempts. The powers
