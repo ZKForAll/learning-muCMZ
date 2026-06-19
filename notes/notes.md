@@ -233,9 +233,10 @@ operations, so the user can later prove possession of a MAC in zero knowledge.
 Definition 3.1 gives a MAC as four algorithms, MAC = (S, K, M, V). Setup
 S(1^λ, n) fixes the security level and the number of attributes n and outputs
 public parameters. Key generation K produces a secret key sk and public
-parameters pp, and the issuer holds sk. The MAC algorithm M(sk, m⃗) takes the
-secret key and attributes m⃗ = (m₁, …, mₙ) and outputs a tag σ, the credential on
-those attributes. Verification V(sk, m⃗, σ) returns 1 when the tag is valid and
+parameters pp, and the issuer holds sk. The MAC algorithm M(sk, $\vec{m}$) takes
+the secret key and attributes $\vec{m} = (m_1, \dots, m_n)$ and outputs a tag σ,
+the credential on those attributes. Verification V(sk, $\vec{m}$, σ) returns 1
+when the tag is valid and
 needs sk, which is the keyed part.
 
 A MAC must satisfy correctness and unforgeability. Correctness means an honestly
@@ -248,5 +249,5 @@ checks. UF-CMVA is a notion, not a proof model, and a proof reaches it for a
 concrete scheme in the generic or algebraic group model.
 
 Remark 3.2 notes that algebraic MACs are randomized. You can de-randomize them in
-the random oracle model by deriving the randomness from H(m⃗), so the same
+the random oracle model by deriving the randomness from H($\vec{m}$), so the same
 attributes always yield the same tag.
