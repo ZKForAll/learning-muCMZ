@@ -9,7 +9,7 @@ Study notes on the cryptographic primitives underlying μCMZ
 > or by Claude only when explicitly asked. The design rationale lives in
 > [`journal.md`](journal.md).
 
-## The prime-order group (O24 §3)
+## 1. The prime-order group (O24 §3)
 
 Everything in μCMZ sits on one object, a group 𝔾. Picture a fixed collection of
 points with a single operation that combines two points into a third, written as
@@ -48,26 +48,26 @@ has exactly eleven points and runs in the computer. Real systems use elliptic
 curves such as Ristretto255, which are smaller and faster at real sizes but much
 harder to build in Lean. The code we write behaves the same over either.
 
-## Hardness assumptions (O24 §3.1)
+## 2. Hardness assumptions (O24 §3.1)
 
 The security rests on problems believed to be infeasible. Each is measured by an
 advantage, a number for how well an attacker does.
 
-### Discrete logarithm (DL)
+### 2.1 Discrete logarithm (DL)
 
 The generator g is public and so is the stepping rule. Given a random point X,
 finding the step count x with x • g = X is infeasible once p is large. Forward,
 from x to X, is fast. Backward, from X to x, has no known shortcut beyond trying
 counts one by one over a huge range.
 
-### Decisional Diffie–Hellman (DDH)
+### 2.2 Decisional Diffie–Hellman (DDH)
 
 Pick secret counts a and b. From the points a • g and b • g, the combined point
 (a·b) • g is the Diffie–Hellman value. DDH says that even after seeing a • g and
 b • g you cannot tell the true combined point from a random point. You can
 neither compute it nor recognize it.
 
-### Advantage
+### 2.3 Advantage
 
 The advantage is the edge an attacker has over blind luck. For DL it is the
 chance of returning the correct x, which is near zero for a random guess. For DDH
