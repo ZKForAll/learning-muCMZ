@@ -194,7 +194,8 @@ The AGM is a proof model, not a hardness assumption
 ([Fuchsbauer–Kiltz–Loss, CRYPTO 2018](https://link.springer.com/chapter/10.1007/978-3-319-96881-0_2)).
 In the AGM every attacker is algebraic, meaning that whenever it outputs a group
 point X, it also outputs a representation of X as a combination of the points
-Z₁, …, Zₙ it has received, coefficients ζ₁, …, ζₙ with X = ζ₁•Z₁ + … + ζₙ•Zₙ.
+$Z_1, \dots, Z_n$ it has received, with coefficients $\zeta_1, \dots, \zeta_n$
+such that $X = \sum_{i=1}^{n} \zeta_i Z_i$.
 
 A real attacker produces new points only by adding and scaling the points it
 holds, so it can always supply the representation. A proof then reads the
