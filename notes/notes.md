@@ -65,7 +65,7 @@ abstract prime-order group and instantiating it with a Schnorr group.
 
 ### 1.3 On hardness assumptions
 
-A hardness assumption is a conjecture, not a theorem. A designer picks a problem
+A hardness assumption is a conjecture. A designer picks a problem
 that runs easily one way and resists undoing, like the discrete logarithm or
 factoring, and conjectures that no efficient algorithm solves it. Nobody proves
 this, because a proof would have to rule out every possible fast algorithm.
@@ -83,7 +83,7 @@ proof reduces breaking the scheme to solving that problem.
 
 ## 2. The prime-order group (O24 §3)
 
-Everything in μCMZ sits on one object, a group 𝔾. Picture a fixed collection of
+Everything in μCMZ builds on one object, a group 𝔾. Picture a fixed collection of
 points with one operation that combines two points into a third. We write this
 operation as addition. One point, 0, does nothing when we add it, and another
 point, G, serves as the starting point, the generator. Adding G to itself x times
@@ -142,11 +142,12 @@ neither compute it nor recognize it.
 
 ### 3.3 Advantage
 
-The advantage is the edge an attacker has over blind luck. For DL it is the
-chance of returning the correct x, which sits near zero for a random guess. For
-DDH the attacker answers a yes or no question, so a coin flip already wins half
-the time, and the advantage is the gap between how often the attacker says "real"
-in the two cases, which a coin flip drives to zero. An assumption holds when the
+The advantage measures how much better an attacker does than guessing. For DL it
+is the probability of returning the correct x, which stays near zero for a random
+guess. For DDH the attacker answers a yes or no question, so guessing already
+succeeds half the time, and the advantage is the gap between how often the
+attacker outputs "real" in the two cases, which equals zero for a guess. An
+assumption holds when the
 advantage stays negligible as p and λ grow (negligible means that as the sizes
 grow the advantage drops to practically nothing, far too small for any real
 attacker to exploit).
