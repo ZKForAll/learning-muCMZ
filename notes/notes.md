@@ -23,7 +23,7 @@ other than 0 also works as a generator, so the group hides no smaller groups
 inside it. Each point is reached by exactly one step count, so x • G for
 x = 0, 1, …, p − 1 lists every point once. And the step counts behave like
 ordinary arithmetic with addition, subtraction, multiplication, and division,
-because a prime p makes the counts mod p, written ℤ_p, a field.
+because a prime p makes the counts mod p, written $ℤ_p$, a field.
 
 The security comes from a one-way effect. Going forward from a count x to the
 point x • G is fast. Going backward from a point X to the count that produced it
@@ -82,16 +82,17 @@ attacker to exploit).
 
 q-DL strengthens DL by handing the attacker a sequence built from powers of the
 secret. A secret count x is chosen and the attacker is shown g, x•g, x²•g, up to
-x^q•g, the generator stepped by x, by x squared, and so on to the q-th power.
+$x^q•g$, the generator stepped by x, by x squared, and so on to the q-th power.
 Even with this sequence, recovering x is assumed infeasible. The number q is how
 many powers are given, and its advantage is $Adv^{q-dl}_{GrGen,A}(λ)$.
 
 The extra powers help an attacker. In plain DL there is one clue, x•g, and the
-best general method tries counts until one matches, about √p attempts. The powers
+best general method tries counts until one matches, about $\sqrt{p}$ attempts. The powers
 all come from the same x, so they are related, and that relatedness is leverage a
 single point does not give. The concrete payoff is Cheon's attack. When q divides
 p − 1, having x•g together with x^q•g lets the attacker split the one big search
-into two smaller ones and recover x in about √(p/q) steps instead of √p, roughly
-√q times faster, a loss of about half the bits of q. So a larger q makes the
+into two smaller ones and recover x in about $\sqrt{p/q}$ steps instead of
+$\sqrt{p}$, roughly $\sqrt{q}$ times faster, a loss of about half the bits of q.
+So a larger q makes the
 attacker's job easier and the assumption weaker, which is why q is kept as small
 as the application allows.
