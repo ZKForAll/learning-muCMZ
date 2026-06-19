@@ -18,7 +18,7 @@ starting point called the generator. Adding G to itself x times gives a point
 written x • G. The setup step GrGen hands you this object together with the
 number of points p and the generator G, packaged as Γ = (𝔾, p, G).
 
-The number of points p is a prime, which has three pleasant effects. Every point
+The number of points p is a prime, which has three consequences. Every point
 other than 0 also works as a generator, so the group hides no smaller groups
 inside it. Each point is reached by exactly one step count, so x • G for
 x = 0, 1, …, p − 1 lists every point once. And the step counts behave like
