@@ -90,8 +90,8 @@ The extra powers help an attacker. In plain DL there is one clue, x•g, and the
 best general method tries counts until one matches, about $\sqrt{p}$ attempts. The powers
 all come from the same x, so they are related, and that relatedness is leverage a
 single point does not give. The concrete payoff is Cheon's attack. When q divides
-p − 1, having x•g together with x^q•g lets the attacker split the one big search
-into two smaller ones and recover x in about $\sqrt{p/q}$ steps instead of
+p − 1, having x•g together with $x^q•g$ lets the attacker split the one big search
+into two smaller ones and recover x in about $\sqrt{\frac{p}{q}}$ steps instead of
 $\sqrt{p}$, roughly $\sqrt{q}$ times faster, a loss of about half the bits of q.
 So a larger q makes the
 attacker's job easier and the assumption weaker, which is why q is kept as small
