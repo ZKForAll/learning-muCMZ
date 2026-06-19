@@ -231,13 +231,12 @@ pairings. "Algebraic" means the construction uses only group and scalar
 operations, so the user can later prove possession of a MAC in zero knowledge.
 
 Definition 3.1 gives a MAC as four algorithms, MAC = (S, K, M, V). Setup
-S(1^λ, n) fixes the security level and the number of attributes n and outputs
+S($1^λ$, n) fixes the security level and the number of attributes n and outputs
 public parameters. Key generation K produces a secret key sk and public
 parameters pp, and the issuer holds sk. The MAC algorithm M(sk, $\vec{m}$) takes
 the secret key and attributes $\vec{m} = (m_1, \dots, m_n)$ and outputs a tag σ,
 the credential on those attributes. Verification V(sk, $\vec{m}$, σ) returns 1
-when the tag is valid and
-needs sk, which is the keyed part.
+when the tag is valid and needs sk, which is the keyed part.
 
 A MAC must satisfy correctness and unforgeability. Correctness means an honestly
 produced tag always verifies. Unforgeability means no efficient attacker produces
@@ -251,3 +250,43 @@ concrete scheme in the generic or algebraic group model.
 Remark 3.2 notes that algebraic MACs are randomized. You can de-randomize them in
 the random oracle model by deriving the randomness from H($\vec{m}$), so the same
 attributes always yield the same tag.
+
+We represent each randomized algorithm in Lean as a value in a probabilistic
+monad. Explaining that choice takes two steps, the general notion of a monad
+first, then the probabilistic case.
+
+### 4.1 Monads
+
+A monad describes computations that carry an effect, here randomness, while still
+composing cleanly. In Lean a monad is a type constructor `m` that turns a result
+type `α` into a computation type `m α`. A value of `m α` is a computation that
+produces an `α`, possibly with the effect attached.
+
+The interface has two operations.
+
+- `pure : α → m α` wraps a plain value as a computation that adds no effect and
+  returns the value.
+- `bind : m α → (α → m β) → m β` runs a computation, takes its result, and feeds
+  it to the next step, producing the combined computation. Lean writes `bind` as
+  `>>=` and offers `do` notation for chains of binds.
+
+These operations obey three laws, left identity, right identity, and
+associativity, which make `pure` a neutral step and `bind` associative, so you
+chain steps without surprises. The paper's randomized assignment, crs ← S(…), is
+one `bind` step, and the arrow is the `bind`.
+
+### 4.2 Probabilistic monads
+
+A probabilistic monad is a monad whose computations are probability
+distributions. A value of `m α` is then a distribution over `α`, `pure x` is the
+distribution that returns `x` with probability 1, and `bind` composes
+distributions by drawing from the first and feeding the draw into the second.
+
+A plain monad only sequences effects, so on its own it cannot sample. A
+probabilistic monad adds a sampling primitive, an operation that produces a value
+drawn from a given distribution, for example a uniform draw over a finite type.
+Mathlib provides one such monad, `PMF`, the type of probability mass functions
+over a countable support, with uniform samplers such as `PMF.uniformOfFintype`.
+We represent S, K, and M as functions into a probabilistic monad and keep V a
+plain function, which matches the paper's split between the randomized arrow and
+the deterministic assignment.
