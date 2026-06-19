@@ -1,4 +1,4 @@
-# learning-μCMZ — notes
+# learning-μCMZ notes
 
 Study notes on the cryptographic primitives underlying μCMZ
 (Orrù 2024, IACR ePrint 2024/1552).

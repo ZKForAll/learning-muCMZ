@@ -1,4 +1,4 @@
-# learning-μCMZ — journal (design decisions & rationale)
+# learning-μCMZ journal (design decisions and rationale)
 
 The internal "why" record: design and formalization decisions, with enough
 context to backtrack or explain choices later. ISO-dated entries, newest appended
@@ -17,9 +17,9 @@ primitive roadmap and design decisions).
   subgroup of (ℤ_q)ˣ), primitives-only scope, paper as the only source.
 - Created the private repo `ZKForAll/learning-muCMZ`. Paper PDF kept locally
   under `resources/` but untracked (`.git/info/exclude`).
-- Next: implement Layer 0a — the prime-order group.
+- Next, implement Layer 0a, the prime-order group.
 
-### Convention — paper fidelity vs Lean idiom
+### Convention on paper fidelity vs Lean idiom
 
 Decision: **the paper (O24) governs the cryptographic vocabulary; Lean/Mathlib
 governs the host-language scaffolding. When the two collide, keep the Lean
@@ -37,5 +37,5 @@ notation and add a docstring relating it to the paper** (citing O24 §x.y).
 - Each primitive module opens with a docstring mapping paper ↔ Lean and the
   relevant §.
 
-Most of the time there is no conflict — the paper's `•`, `ℤ_p`, `sk`, `gen` are
-also what idiomatic Lean wants; this rule only decides the rare collisions.
+Most of the time there is no conflict, since the paper's `•`, `ℤ_p`, `sk`, `gen`
+are also what idiomatic Lean wants. This rule only decides the rare collisions.
