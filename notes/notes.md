@@ -74,6 +74,6 @@ chance of returning the correct x, which is near zero for a random guess. For DD
 the attacker answers a yes or no question, so a coin flip already wins half the
 time, and the advantage is the gap between how often the attacker says "real" in
 the two cases, which is zero for a coin flip. An assumption holds when the
-advantage stays negligible as p and λ grow (negligible means it shrinks faster
-than one over any polynomial in the size, so as the sizes grow it quickly falls
-below any practical bound and is effectively zero for a real attacker).
+advantage stays negligible as p and λ grow (negligible means that as the sizes
+grow the advantage drops to practically nothing, far too small for any real
+attacker to exploit).
