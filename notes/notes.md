@@ -187,3 +187,19 @@ yes or no problem. Recognition can stay hard even when computation does not help
 This assumption supports a pseudorandom function that rate-limiting and
 pseudonyms use (O24 §8), where the outputs take the form of such inverse points
 and must look random.
+
+### 3.6 Algebraic group model (AGM)
+
+The AGM is a proof model, not a hardness assumption
+([Fuchsbauer–Kiltz–Loss, CRYPTO 2018](https://link.springer.com/chapter/10.1007/978-3-319-96881-0_2)).
+In the AGM every attacker is algebraic, meaning that whenever it outputs a group
+point X, it also outputs a representation of X as a combination of the points
+Z₁, …, Zₙ it has received, coefficients ζ₁, …, ζₙ with X = ζ₁•Z₁ + … + ζₙ•Zₙ.
+
+A real attacker produces new points only by adding and scaling the points it
+holds, so it can always supply the representation. A proof then reads the
+coefficients and reduces security to the discrete logarithm. The AGM gives the
+prover more than the standard model, where the attacker supplies no
+representation, and less than the generic group model, where the attacker cannot
+use the group's representation at all. O24 proves μCMZ and μBBS in the AGM, so the
+guarantees cover algebraic attackers.
