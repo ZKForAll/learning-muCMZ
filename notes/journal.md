@@ -22,9 +22,8 @@ primitive roadmap and design decisions).
 ### Convention — paper fidelity vs Lean idiom
 
 Decision: **the paper (O24) governs the cryptographic vocabulary; Lean/Mathlib
-governs the host-language scaffolding. On a collision, use the idiomatic Lean
-construct but keep the paper symbol visible** (via unicode notation and/or a
-docstring citing O24 §x.y).
+governs the host-language scaffolding. When the two collide, keep the Lean
+notation and add a docstring relating it to the paper** (citing O24 §x.y).
 
 - Object / algorithm / variable names → paper, verbatim: `sk`, `pp`, `crs`,
   `MAC = (S,K,M,V)`, `mᵢ`, `U`, `V`, `x₀`.
