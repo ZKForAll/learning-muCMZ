@@ -89,7 +89,7 @@ bottom-up.
 | Concrete group 𝔾 | **Schnorr group** | order-p subgroup of (ℤ_q)ˣ; `#eval`-able; Pedersen binding holds honestly (dlog of H base G is unknown) |
 
 The toy example instance uses `p = 11`, `q = 23 = 2p+1` (a safe prime), with
-generator `𝒢 = 4` (order 11 in (ℤ₂₃)ˣ). The values are tiny, so outputs are
+generator `g = 4` (order 11 in (ℤ₂₃)ˣ). The values are tiny, so outputs are
 readable. The discrete logarithm is trivially recoverable at this size. Increase
 `p, q` to cryptographic sizes to make it hard. The *algebra* (homomorphisms,
 binding) is honest at any size.

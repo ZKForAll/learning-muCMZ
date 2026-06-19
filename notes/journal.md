@@ -30,7 +30,7 @@ notation and add a docstring relating it to the paper** (citing O24 §x.y).
   `pp`, `crs`, `MAC = (S,K,M,V)`, `mᵢ`, `U`, `V`, `x₀`.
 - Math notation follows the paper in unicode, which is usually already
   Lean-idiomatic. `ℤ_p` is `ZMod p`, additive `x • P` uses Mathlib's `•`, and
-  generator `G` is `𝒢`.
+  generator `G` is `g`.
 - Typeclass and structure design, generics, namespacing, and casing follow Lean
   and Mathlib. Reuse `Field`, `AddCommGroup`, `ZMod`, the monad parameter `m`,
   `UpperCamelCase` types, and `lowerCamelCase` defs.
@@ -47,7 +47,7 @@ are also what idiomatic Lean wants. This rule only decides the rare collisions.
 The group description Γ = (𝔾, p, G) is fixed as ambient typeclass context and is
 not modeled as a `GrGen` procedure. For defining and evaluating the primitives
 the binders `(p : ℕ) [Fact p.Prime]`, `[AddCommGroup G]`, `[Module (ZMod p) G]`,
-and a generator `(𝒢 : G)` suffice, since `Module (ZMod p) G` already forces
+and a generator `(g : G)` suffice, since `Module (ZMod p) G` already forces
 `p • x = 0`. `[IsAddCyclic G]` and `Nat.card G = p` are added only when a proof
 needs the `ZMod p ≃ G` bijection. The discrete logarithm assumption is not a
 typeclass. It is a §3.1 experiment, asymptotic in λ.

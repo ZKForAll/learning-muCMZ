@@ -33,11 +33,11 @@ In Lean we do not run GrGen. We simply assume such a group is given, by stating
 the following.
 
 ```lean
-variable (p : ℕ) [Fact p.Prime] {G : Type*} [AddCommGroup G] [Module (ZMod p) G] (𝒢 : G)
+variable (p : ℕ) [Fact p.Prime] {G : Type*} [AddCommGroup G] [Module (ZMod p) G] (g : G)
 ```
 
 In words, p is a prime, G is a group written additively, the counts ℤ_p act on it
-by repeated addition, and 𝒢 is the chosen generator. Two extra facts, that the
+by repeated addition, and g is the chosen generator. Two extra facts, that the
 group is cyclic and has exactly p points, are added only when a proof needs them.
 The hardness of the discrete logarithm is not stated here, since it is a separate
 assumption about attackers.
