@@ -18,3 +18,25 @@ primitive roadmap and design decisions).
 - Created the private repo `ZKForAll/learning-muCMZ`. Paper PDF kept locally
   under `resources/` but untracked (`.git/info/exclude`).
 - Next: implement Layer 0a — the prime-order group.
+
+### Convention — paper fidelity vs Lean idiom
+
+Decision: **the paper (O24) governs the cryptographic vocabulary; Lean/Mathlib
+governs the host-language scaffolding. On a collision, use the idiomatic Lean
+construct but keep the paper symbol visible** (via unicode notation and/or a
+docstring citing O24 §x.y).
+
+- Object / algorithm / variable names → paper, verbatim: `sk`, `pp`, `crs`,
+  `MAC = (S,K,M,V)`, `mᵢ`, `U`, `V`, `x₀`.
+- Math notation → paper, in unicode (usually already Lean-idiomatic): `ℤ_p` is
+  `ZMod p`; additive `x • P` uses Mathlib's `•`; generator `G` is `𝒢`.
+- Typeclass/structure design, generics, namespacing, casing → Lean/Mathlib:
+  reuse `Field`/`AddCommGroup`/`ZMod`, monad param `m`, `UpperCamelCase` types,
+  `lowerCamelCase` defs.
+- Game/advantage function *names* → Lean idiom, paper symbol in the docstring
+  (e.g. `advUFCMVA` with `-- O24 Fig 5`).
+- Each primitive module opens with a docstring mapping paper ↔ Lean and the
+  relevant §.
+
+Most of the time there is no conflict — the paper's `•`, `ℤ_p`, `sk`, `gen` are
+also what idiomatic Lean wants; this rule only decides the rare collisions.
