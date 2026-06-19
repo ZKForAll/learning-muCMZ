@@ -47,3 +47,31 @@ whole numbers mod a prime q, with toy values p = 11, q = 23, and generator 4. It
 has exactly eleven points and runs in the computer. Real systems use elliptic
 curves such as Ristretto255, which are smaller and faster at real sizes but much
 harder to build in Lean. The code we write behaves the same over either.
+
+## Hardness assumptions (O24 §3.1)
+
+The security rests on problems believed to be infeasible. Each is measured by an
+advantage, a number for how well an attacker does.
+
+### Discrete logarithm (DL)
+
+The generator g is public and so is the stepping rule. Given a random point X,
+finding the step count x with x • g = X is infeasible once p is large. Forward,
+from x to X, is fast. Backward, from X to x, has no known shortcut beyond trying
+counts one by one over a huge range.
+
+### Decisional Diffie–Hellman (DDH)
+
+Pick secret counts a and b. From the points a • g and b • g, the combined point
+(a·b) • g is the Diffie–Hellman value. DDH says that even after seeing a • g and
+b • g you cannot tell the true combined point from a random point. You can
+neither compute it nor recognize it.
+
+### Advantage
+
+The advantage is the edge an attacker has over blind luck. For DL it is the
+chance of returning the correct x, which is near zero for a random guess. For DDH
+the attacker answers a yes or no question, so a coin flip already wins half the
+time, and the advantage is the gap between how often the attacker says "real" in
+the two cases, which is zero for a coin flip. An assumption holds when the
+advantage stays negligible as p and λ grow.
