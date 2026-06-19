@@ -1,0 +1,4 @@
+-- learning-μCMZ: a hands-on, paper-driven reimplementation of the primitives
+-- underlying μCMZ (Orrù 2024, IACR ePrint 2024/1552).
+--
+-- Library root. Each primitive lives in its own module under `MuCMZ/`.

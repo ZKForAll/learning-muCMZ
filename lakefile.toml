@@ -1,0 +1,10 @@
+name = "muCMZ"
+defaultTargets = ["MuCMZ"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.22.0"
+
+[[lean_lib]]
+name = "MuCMZ"
