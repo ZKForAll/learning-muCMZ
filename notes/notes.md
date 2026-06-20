@@ -290,3 +290,32 @@ over a countable support, with uniform samplers such as `PMF.uniformOfFintype`.
 We represent S, K, and M as functions into a probabilistic monad and keep V a
 plain function, which matches the paper's split between the randomized arrow and
 the deterministic assignment.
+
+### 4.3 The MAC structure in Lean
+
+The four algorithms become the fields of a Lean structure. `S`, `K`, and `M`
+return `PMF`, and `V` returns `Bool`.
+
+```lean
+structure MAC (𝕄 : Type*) (n : ℕ) (crs sk pp σ : Type*) where
+  /-- setup `crs ← S(1^λ, n)`; `secParam` is the security parameter λ -/
+  S : (secParam : ℕ) → PMF crs
+  /-- key generation `(sk, pp) ← K(crs)` -/
+  K : crs → PMF (sk × pp)
+  /-- the MAC `σ ← M(sk, m)` over attributes `m : Fin n → 𝕄` -/
+  M : sk → (Fin n → 𝕄) → PMF σ
+  /-- deterministic verification `0/1 := V(sk, m, σ)` -/
+  V : sk → (Fin n → 𝕄) → σ → Bool
+```
+
+The message family `𝕄` and the attribute count `n` are parameters, so one `n`
+serves the whole scheme and `M` and `V` take exactly `n` attributes, a length-`n`
+vector `Fin n → 𝕄`, which is $\mathbb{M}^n$. The carriers `crs`, `sk`, `pp`, `σ`
+are parameters too, so each concrete scheme supplies its own, and `K` returns
+`PMF (sk × pp)` for the pair `(sk, pp)`.
+
+The structure holds only the syntax. Correctness and UF-CMVA unforgeability come
+later as predicates over a `MAC`, not as fields. One simplification remains. `S`
+takes only the security parameter, while the paper writes `S(1^λ, n)`. Lifting
+`n` to a parameter keeps a single consistent `n` by construction, at the cost of
+dropping `n` from the signature of `S`.
