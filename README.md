@@ -66,11 +66,11 @@ bottom-up.
 - **Algebraic MAC (§3.2, Def 3.1).** `MAC = (S, K, M, V)` has four algorithms.
   - `crs ← S(1^λ, n)` is the setup, which fixes the attribute count n and the message family 𝕄.
   - `(sk, pp) ← K(crs)` is key generation.
-  - `σ ← M(sk, m⃗)` computes the MAC over attributes `m⃗ ∈ 𝕄ⁿ` and is randomized.
-  - `0/1 := V(sk, m⃗, σ)` is deterministic verification.
+  - `σ ← M(sk, m)` computes the MAC over attributes `m ∈ 𝕄^n` and is randomized.
+  - `0/1 := V(sk, m, σ)` is deterministic verification.
   - The properties are **correctness** and **UF-CMVA** unforgeability (game in
     Fig 5, with `Sign` and `Verify` oracles). Remark 3.2 notes that a MAC can be
-    de-randomized in the ROM by seeding its coins with `H(m⃗)`.
+    de-randomized in the ROM by seeding its coins with `H(m)`.
 - **NIZK / ZK argument (§3.3).** `ZKP = (S, P, V)` for a relation family ℛ, with
   `crs ← S(1^λ)`, `π ← P(crs, x, w)`, and `0/1 ← V(crs, x, π)`. The properties are
   **completeness**, **knowledge-soundness** (Adv with extractor Ext),
