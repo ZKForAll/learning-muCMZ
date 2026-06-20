@@ -282,11 +282,15 @@ distributions. A value of `m α` is then a distribution over `α`, `pure x` is t
 distribution that returns `x` with probability 1, and `bind` composes
 distributions by drawing from the first and feeding the draw into the second.
 
+A probability mass function (PMF) is the discrete case of such a distribution. A
+`PMF α` gives each value in `α` a probability, and the probabilities sum to 1
+over a countable support. Mathlib defines it as a function `α → ℝ≥0∞` with a proof
+that the values sum to 1, and this is the monad we instantiate `m` with.
+
 A plain monad only sequences effects, so on its own it cannot sample. A
 probabilistic monad adds a sampling primitive, an operation that produces a value
 drawn from a given distribution, for example a uniform draw over a finite type.
-Mathlib provides one such monad, `PMF`, the type of probability mass functions
-over a countable support, with uniform samplers such as `PMF.uniformOfFintype`.
+`PMF` provides such samplers, for example `PMF.uniformOfFintype`.
 We represent S, K, and M as functions into a probabilistic monad and keep V a
 plain function, which matches the paper's split between the randomized arrow and
 the deterministic assignment.
