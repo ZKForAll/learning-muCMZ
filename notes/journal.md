@@ -51,3 +51,19 @@ and a generator `(g : G)` suffice, since `Module (ZMod p) G` already forces
 `p • x = 0`. `[IsAddCyclic G]` and `Nat.card G = p` are added only when a proof
 needs the `ZMod p ≃ G` bijection. The discrete logarithm assumption is not a
 typeclass. It is a §3.1 experiment, asymptotic in λ.
+
+### Probabilistic monad representation (PMF now, FreeM later)
+
+We represent the randomized MAC algorithms (S, K, M) with Mathlib's `PMF`, the
+probability mass function monad, and keep V a plain function. PMF is denotational,
+Mathlib-native, and lawful, so the syntax and correctness stay light and the
+probabilities are direct.
+
+Later we refactor to a free monad over a polynomial functor (`FreeM`), which
+separates the program syntax from its semantics and supports the oracle access
+and reinterpretation the game layer needs. At that point we must argue, and
+preferably prove, that the two representations agree. The intended statement is
+that a probability handler ⟦·⟧ : `FreeM Sig α → PMF α` is a monad morphism and
+that the `FreeM` MAC interpreted under it equals the `PMF` MAC. Proving the
+handler respects `pure` and `bind` gives the equivalence pointwise as
+distributions.
