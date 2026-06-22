@@ -20,9 +20,15 @@ import tempfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Preamble prepended before the extracted blocks. Mathlib supplies ZMod, Fact,
-# AddCommGroup, Module, etc. Add `import MuCMZ` here once the notes reference
-# project definitions.
-PREAMBLE = "import Mathlib\n"
+# AddCommGroup, Module, etc.; ToMathlib.PFunctor.Free supplies VCVio's `FreeM`;
+# the OracleComp modules supply `OracleComp`, `ProbComp`, `evalDist`, `probEvent`.
+# Add `import MuCMZ` here once the notes reference project definitions.
+PREAMBLE = (
+    "import Mathlib\n"
+    "import ToMathlib.PFunctor.Free\n"
+    "import VCVio.OracleComp.ProbComp\n"
+    "import VCVio.OracleComp.EvalDist\n"
+)
 
 FENCE = re.compile(r"^```+\s*lean\b", re.IGNORECASE)
 FENCE_END = re.compile(r"^```+\s*$")

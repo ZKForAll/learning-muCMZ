@@ -251,9 +251,12 @@ Remark 3.2 notes that algebraic MACs are randomized. You can de-randomize them i
 the random oracle model by deriving the randomness from H($\vec{m}$), so the same
 attributes always yield the same tag.
 
-We represent each randomized algorithm in Lean as a value in a probabilistic
-monad. Explaining that choice takes two steps, the general notion of a monad
-first, then the probabilistic case.
+We represent each randomized algorithm in Lean as a program in a free monad over
+a polynomial functor, then give it meaning as a probability distribution.
+Explaining the choice takes a few steps, the general notion of a monad, the free
+monad that turns an operation signature into one, the probability mass functions
+that give it meaning, what each of the two solves, and how VCVio packages both as
+`OracleComp`.
 
 ### 4.1 Monads
 
@@ -275,33 +278,149 @@ associativity, which make `pure` a neutral step and `bind` associative, so you
 chain steps without surprises. The paper's randomized assignment, crs ← S(…), is
 one `bind` step, and the arrow is the `bind`.
 
-### 4.2 Probabilistic monads
+### 4.2 Free monads over polynomial functors
 
-A probabilistic monad is a monad whose computations are probability
-distributions. A value of `m α` is then a distribution over `α`, `pure x` is the
-distribution that returns `x` with probability 1, and `bind` composes
-distributions by drawing from the first and feeding the draw into the second.
+A plain monad fixes both the syntax and the meaning of its computations at once.
+A free monad keeps only the syntax. It turns a signature of operations into a
+monad mechanically, so a value is a tree of operations with no meaning yet
+attached. A leaf holds a result, and each inner node names one operation and
+branches into the continuations that consume the operation's result. The meaning
+comes later, from a separate handler that interprets each operation.
 
-A probability mass function (PMF) is the discrete case of such a distribution. A
-`PMF α` gives each value in `α` a probability, and the probabilities sum to 1
-over a countable support. Mathlib defines it as a function `α → ℝ≥0∞` with a proof
-that the values sum to 1, and this is the monad we instantiate `m` with.
+A polynomial functor supplies the signature. In Mathlib a `PFunctor` is a set of
+shapes `A` together with a family of positions `B a` for each shape `a`. Read a
+shape as the name of an operation and its positions as the results that operation
+can return. VCVio builds the free monad on such a functor as the inductive type
 
-A plain monad only sequences effects, so on its own it cannot sample. A
-probabilistic monad adds a sampling primitive, an operation that produces a value
-drawn from a given distribution, for example a uniform draw over a finite type.
-`PMF` provides such samplers, for example `PMF.uniformOfFintype`.
-We represent S, K, and M as functions into a probabilistic monad and keep V a
-plain function, which matches the paper's split between the randomized arrow and
-the deterministic assignment.
+```
+inductive FreeM (P : PFunctor.{uA, uB}) : Type v → Type (max uA uB v)
+  | pure (x : α)                           -- a result, no operation
+  | roll (a : P.A) (k : P.B a → FreeM P α) -- run operation `a`, continue with `k`
+```
 
-### 4.3 The MAC structure in Lean
-
-The four algorithms become the fields of a Lean structure. `S`, `K`, and `M`
-return `PMF`, and `V` returns `Bool`.
+from `ToMathlib.PFunctor.Free`. A program in `FreeM P α` is a finite tree of
+operations whose leaves carry an `α`. The monad's `bind` grafts the next program
+onto every leaf, and `pure` is a bare leaf, so `do` notation builds these trees.
 
 ```lean
-structure MAC (𝕄 : Type*) (n : ℕ) (crs sk pp σ : Type*) where
+open PFunctor
+
+#check @FreeM        -- FreeM : (P : PFunctor) → Type v → Type (max uA uB v)
+
+-- a free-monad program over any signature `Sig`, built with `do`
+example (Sig : PFunctor) (p : FreeM Sig ℕ) : FreeM Sig ℕ := do
+  let x ← p
+  pure (x + 1)
+```
+
+The codomain rises one universe. A node stores a function out of the positions
+`P.B a`, a type in `Type uB`, into the tree, and the leaves carry a result in
+`Type v`, so the tree cannot stay at `Type v`. It lands at `Type (max uA uB v)`,
+the universe bump in the signature above. Mathlib keeps the shape universe `uA`
+and the position universe `uB` separate, so both appear in the bump. The bump is
+what lets `FreeM P` still count as a `Monad`, since Lean's universe polymorphism
+accepts the raised codomain.
+
+### 4.3 Probabilistic monads
+
+The free monad gives the syntax. A probability mass function gives one meaning. A
+probability mass function (PMF) assigns each value of a type a probability, with
+the probabilities summing to 1 over a countable support. Mathlib defines `PMF α`
+as a function `α → ℝ≥0∞` with a proof that the values sum to 1. `PMF` is itself a
+lawful monad, where `pure x` is the point mass at `x` and `bind` draws from the
+first distribution and feeds the draw to the second.
+
+A plain monad sequences operations but cannot sample on its own. The signature
+`Sig` therefore carries a sampling operation, for example a uniform draw over a
+finite type. A handler ⟦·⟧ sends a program in `FreeM Sig α` to the `PMF α` of its
+results. It reads `pure x` as the point mass at `x` and each sampling node as the
+matching draw, then composes. The handler is a monad morphism, so it respects
+`pure` and `bind` and the distribution of a sequence matches the sequence of
+distributions.
+
+### 4.4 What FreeM and PMF each solve
+
+`FreeM` and `PMF` sit at different layers and solve different problems, so the
+scheme uses one of them as its definition and reaches the other only for meaning.
+
+`FreeM Sig` is the definition layer. It records an algorithm as syntax, the
+operations it performs and their order, and defers their meaning to a handler. It
+solves two problems. One program carries several meanings, so the same `M` serves
+correctness under one handler and the UF-CMVA game under another. And the
+signature `Sig` can hold the oracle operations `Sign` and `Verify` together with
+the state they need, the query set Qrs that the game reads. A definition given
+straight as a distribution keeps none of this structure, so it cannot host the
+oracle layer.
+
+`PMF` is the semantics layer. It is a distribution, the object that carries
+probabilities. It solves the quantitative problem. Correctness says a tag
+verifies with probability 1, and the advantage is a probability, and both are
+statements about a distribution. A `FreeM` program holds no probabilities, since
+a sampling node is only a label, so you cannot phrase either claim until you
+interpret the program into a `PMF`.
+
+The two are not competing definitions. The MAC is defined once as a free-monad
+program, and `PMF` appears downstream as the codomain of a handler ⟦·⟧ that
+interprets it, computed when a probability is needed. The handler exists only
+when the signature says how each operation becomes a distribution. A bare
+`FreeM Sig` carries no such data, so §4.5 uses VCVio's `OracleComp`, the free
+monad over an oracle signature that supplies it. The handler is a monad morphism,
+so reading the distribution commutes with sequencing.
+
+| | `FreeM Sig` | `PMF` |
+|---|---|---|
+| Layer | syntax, the definition | semantics, the meaning |
+| Holds | operations and their order | a distribution over results |
+| Solves | many interpretations of one program; hosts the oracles and Qrs | probabilities for correctness and the advantage |
+| Lacks | any probability | the program structure, meaning fixed early |
+
+### 4.5 OracleComp in VCVio
+
+VCVio packages this layering, so we reuse it rather than build it. `OracleComp spec α`
+is the free monad over an oracle signature `spec`, an `OracleSpec`. It is the
+syntax layer, `FreeM` specialized to oracle queries. The randomized algorithms
+become `OracleComp` programs, and sampling is the uniform-selection oracle, so a
+computation whose only oracle is sampling has type `ProbComp = OracleComp unifSpec`.
+
+`evalDist : OracleComp spec α → SPMF α` is the probability handler. `SPMF` is
+`OptionT PMF`, a sub-probability distribution whose mass can fall below 1 to
+record a run that fails. It sends each query to the uniform distribution over its
+range. The functions `probOutput` and `probEvent` read the probability of an
+output or an event off that distribution. The game handlers come from
+`SimSemantics`, where `simulateQ` runs a program under a `QueryImpl` that answers
+each query, and from `QueryTracking`, which logs the queries, the Qrs the game
+accumulates.
+
+```lean
+open OracleComp
+
+#check @OracleComp   -- OracleSpec ι → Type → Type _   (the program, a free monad)
+#check @ProbComp     -- OracleComp unifSpec            (only a sampling oracle)
+#check @evalDist     -- OracleComp spec α → SPMF α     (the probability handler)
+#check @probEvent    -- m α → (α → Prop) → ℝ≥0∞        (probability of an event)
+```
+
+`OracleComp` does not state correctness. It is the program type. Correctness is a
+proposition we write with `evalDist` and `probEvent`, that the honest run accepts
+with probability 1, and unforgeability is the advantage read from the game's
+distribution. VCVio supplies the machinery to state and prove both, and the
+statements stay ours.
+
+### 4.6 The MAC structure in Lean
+
+The four algorithms become the fields of a Lean structure. We write two versions.
+The first uses `PMF` directly and reaches correctness but not the game. The second
+uses `OracleComp` and reaches both.
+
+#### 4.6.1 A first specification with PMF
+
+The randomized algorithms `S`, `K`, and `M` return a `PMF`, and `V` returns
+`Bool`.
+
+```lean
+namespace WithPMF
+
+structure MAC (𝕄 : Type) (n : ℕ) (crs sk pp σ : Type) where
   /-- setup `crs ← S(1^λ, n)`; `secParam` is the security parameter λ -/
   S : (secParam : ℕ) → PMF crs
   /-- key generation `(sk, pp) ← K(crs)` -/
@@ -310,16 +429,67 @@ structure MAC (𝕄 : Type*) (n : ℕ) (crs sk pp σ : Type*) where
   M : sk → (Fin n → 𝕄) → PMF σ
   /-- deterministic verification `0/1 := V(sk, m, σ)` -/
   V : sk → (Fin n → 𝕄) → σ → Bool
+
+end WithPMF
 ```
+
+This states correctness directly, since each algorithm is already a distribution,
+so binding `S`, `K`, and `M` and reading the probability that `V` accepts gives
+the correctness statement. It cannot state UF-CMVA, for three reasons.
+
+- `M` returns a finished distribution. The `Sign` oracle has to run `M` and also
+  record the queried message into Qrs, but a `PMF σ` exposes only the output
+  distribution, not the steps, so there is no seam to insert the bookkeeping.
+- The signature has no place for the `Sign` and `Verify` oracles or the mutable
+  query set Qrs. A `PMF` sequences randomness and nothing else.
+- The adversary needs adaptive oracle access, calling `Sign` and `Verify` and
+  branching on the answers. A `PMF` value is non-interactive.
+
+So the `PMF` specification reaches correctness but stops short of unforgeability,
+which is the property the paper proves.
+
+#### 4.6.2 The specification with OracleSpec
+
+Replacing `PMF` with `OracleComp spec`, a program in the free monad over an oracle
+signature `spec : OracleSpec ι`, keeps correctness and adds the game.
+
+```lean
+open OracleComp
+
+structure MAC (𝕄 : Type) (n : ℕ) {ι : Type} (spec : OracleSpec ι)
+    (crs sk pp σ : Type) where
+  /-- setup `crs ← S(1^λ, n)`; `secParam` is the security parameter λ -/
+  S : (secParam : ℕ) → OracleComp spec crs
+  /-- key generation `(sk, pp) ← K(crs)` -/
+  K : crs → OracleComp spec (sk × pp)
+  /-- the MAC `σ ← M(sk, m)` over attributes `m : Fin n → 𝕄` -/
+  M : sk → (Fin n → 𝕄) → OracleComp spec σ
+  /-- deterministic verification `0/1 := V(sk, m, σ)` -/
+  V : sk → (Fin n → 𝕄) → σ → Bool
+```
+
+Each problem of the `PMF` version is solved.
+
+- `M` is now a program, the syntax of its steps, not a finished distribution. The
+  `Sign` oracle runs the same program under a handler that records the message
+  into Qrs, so the seam exists.
+- The oracles live in `spec`. The plain MAC takes `spec = unifSpec`, where the
+  only oracle is uniform sampling. The game extends `spec` with `Sign` and
+  `Verify`, and H (Remark 3.2) extends it too.
+- The adversary is itself an `OracleComp` program that queries `spec` and branches
+  on the answers, so adaptive oracle access is expressible.
+- Correctness survives the change. `evalDist : OracleComp spec α → SPMF α` recovers
+  the distribution, so correctness interprets `S`, `K`, and `M` under `evalDist`
+  and checks that `V` accepts with probability 1, exactly as the `PMF` version did.
 
 The message family `𝕄` and the attribute count `n` are parameters, so one `n`
 serves the whole scheme and `M` and `V` take exactly `n` attributes, a length-`n`
 vector `Fin n → 𝕄`, which is $\mathbb{M}^n$. The carriers `crs`, `sk`, `pp`, `σ`
-are parameters too, so each concrete scheme supplies its own, and `K` returns
-`PMF (sk × pp)` for the pair `(sk, pp)`.
+are parameters too, so each concrete scheme supplies its own, and `K` returns a
+program producing the pair `(sk, pp)`. Correctness and UF-CMVA unforgeability come
+later as predicates over a `MAC`, not as fields.
 
-The structure holds only the syntax. Correctness and UF-CMVA unforgeability come
-later as predicates over a `MAC`, not as fields. One simplification remains. `S`
-takes only the security parameter, while the paper writes `S(1^λ, n)`. Lifting
-`n` to a parameter keeps a single consistent `n` by construction, at the cost of
-dropping `n` from the signature of `S`.
+One simplification remains, shared by both versions. `S` takes only the security
+parameter, while the paper writes `S(1^λ, n)`. Lifting `n` to a parameter keeps a
+single consistent `n` by construction, at the cost of dropping `n` from the
+signature of `S`.

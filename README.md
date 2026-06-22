@@ -82,10 +82,11 @@ bottom-up.
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Language | **Lean 4** | consistency with the surrounding work |
+| Language | **Lean 4** (toolchain v4.28.0) | consistency with the surrounding work; VCVio's pin |
 | Scope | **primitives only** | §3 interfaces + their group-based building blocks |
 | Source | **O24 paper only** | no reuse of any other KVAC codebase's design |
-| Dependencies | **Mathlib-backed** | `ZMod p` field, clean interfaces, future provability |
+| Dependencies | **Mathlib + VCVio** | `ZMod p` field; VCVio's `PFunctor.FreeM` and `OracleComp` for the randomized/oracle layer |
+| Randomized algorithms | **free monad over a `PFunctor`** | one program, two handlers: PMF semantics for correctness, oracle handler for UF-CMVA |
 | Concrete group 𝔾 | **Schnorr group** | order-p subgroup of (ℤ_q)ˣ; `#eval`-able; Pedersen binding holds honestly (dlog of H base G is unknown) |
 
 The toy example instance uses `p = 11`, `q = 23 = 2p+1` (a safe prime), with
@@ -99,8 +100,8 @@ binding) is honest at any size.
 ```
 learning-muCMZ/
 ├── README.md             this file
-├── lakefile.toml         Mathlib dependency
-├── lean-toolchain        leanprover/lean4:v4.22.0
+├── lakefile.toml         Mathlib + VCVio dependencies
+├── lean-toolchain        leanprover/lean4:v4.28.0
 ├── MuCMZ.lean            library root (each primitive gets a module under MuCMZ/)
 ├── notes/                tracked notes
 │   ├── notes.md          study notes, the project deliverable

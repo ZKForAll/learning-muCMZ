@@ -67,3 +67,42 @@ that a probability handler ⟦·⟧ : `FreeM Sig α → PMF α` is a monad morph
 that the `FreeM` MAC interpreted under it equals the `PMF` MAC. Proving the
 handler respects `pure` and `bind` gives the equivalence pointwise as
 distributions.
+
+**Superseded on 2026-06-21**, see below. We adopt `FreeM` from the start instead
+of staging PMF first.
+
+## 2026-06-21
+
+### Free monad from the start, via VCVio
+
+We reverse the PMF-now/FreeM-later staging. The randomized MAC algorithms become
+programs in a free monad over a polynomial functor from the start, and PMF
+becomes one semantic domain reached by a handler, not the monad the algorithms
+live in.
+
+- **Why.** Correctness alone fits PMF, but unforgeability (UF-CMVA, O24 Fig 5)
+  needs adaptive oracle access (Sign, Verify) and the mutable query set Qrs,
+  which a PMF cannot express. The free monad separates program syntax from
+  handler semantics, so one MAC program runs under a probability handler for
+  correctness and under an oracle handler for the game. Committing to `FreeM` up
+  front avoids carrying two representations and the equivalence proof between
+  them.
+- **Reuse VCVio.** We use VCVio's `PFunctor.FreeM` (`ToMathlib.PFunctor.Free`)
+  and its `OracleComp` layer rather than hand-rolling. VCVio already supplies the
+  `Monad`/`LawfulMonad` instances, monad morphisms, and oracle simulation the
+  game layer needs.
+- **Build change.** Toolchain `leanprover/lean4:v4.22.0` → `v4.28.0` (VCVio's
+  pin; a project and its deps share one toolchain). `lakefile.toml` now requires
+  `mathlib @ v4.28.0` and `VCVio @ git v4.28.0`
+  (https://github.com/Verified-zkEVM/VCV-io). The local VCVio checkout
+  (`learn/vcv-io-exploration`, `37ec339`, `v4.28.0-44-g…`) is unpushed, so we pin
+  the `v4.28.0` tag, which already carries `Free.lean` and `OracleComp`. Mathlib
+  cache refetched at the new rev.
+- **PMF role.** PMF is now the codomain of the handler ⟦·⟧ : `FreeM Sig α → PMF α`,
+  a monad morphism. Correctness reads `M`'s program under ⟦·⟧ and checks
+  acceptance with probability 1.
+- **Notes §4 restructured.** 4.1 monads, 4.2 free monads over polynomial functors
+  (with the universe bump `Type (max uA uB v)`), 4.3 probabilistic monads (PMF as
+  semantics), 4.4 the MAC structure over `FreeM Sig`. The MAC structure gains a
+  `Sig : PFunctor` parameter. The notes checker preamble now imports
+  `ToMathlib.PFunctor.Free`.
