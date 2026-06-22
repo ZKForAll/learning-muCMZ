@@ -35,7 +35,8 @@ bottom-up.
               │   Fiat–Shamir → NIZK; the ZKP=(S,P,V) interface
               ▼
   Layer 3  algebraic MAC             §3.2 (Def 3.1, Fig 5)
-              │   MAC=(S,K,M,V); MAC_GGM construction; UF-CMVA game
+              │   MAC=(S,K,M,V) interface + UF-CMVA game (O24 §3.2); the MAC_GGM
+              │   construction is CMZ14, used in O24 only via the µCMZ figures
               ▼
   Layer 4  primitive interfaces      §3.3, §3.4
                   NIZK syntax; anonymous-token syntax AT=(S,K,I,V) + OMUF game
@@ -54,7 +55,7 @@ bottom-up.
 | 2a | **Schnorr Σ-protocol** | §2.6 | PoK of discrete log via (commit, challenge, response) messages; completeness, special soundness, HVZK |
 | 2b | **Linear-relation / representation proofs** | §5.1 | the workhorse Σ-protocol for "X = Σ aᵢ•Bᵢ" used in presentation |
 | 2c | **Fiat–Shamir → NIZK** | §3.3 | non-interactive transform via H_p; yields the `ZKP = (S, P, V)` interface |
-| 3 | **Algebraic MAC** | §3.2, Def 3.1, Fig 5 | `MAC = (S, K, M, V)`; the MAC_GGM construction `V = (x₀ + Σ xᵢmᵢ)•U`; UF-CMVA game |
+| 3 | **Algebraic MAC** | §3.2 (interface + game); CMZ14 (construction) | `MAC = (S, K, M, V)` and the UF-CMVA game from O24 §3.2; the concrete MAC_GGM `V = (x₀ + Σ xᵢmᵢ)•U` is from Chase–Meiklejohn–Zaverucha (CCS'14, doi:10.1145/2660267.2660328), appearing in O24 only through the µCMZ figures (§2.3 Fig 1, §5.1 Fig 9) |
 | 4a | **NIZK syntax + properties** | §3.3 | completeness, knowledge-soundness, zero-knowledge, simulation-extractability (as the abstract interface μCMZ assumes) |
 | 4b | **Anonymous-token syntax** | §3.4 | `AT = (S, K, I, V)`; one-more-unforgeability (OMUF) game, Fig 6 |
 
