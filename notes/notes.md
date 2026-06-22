@@ -102,7 +102,7 @@ The security comes from a one-way effect. Going forward from a count x to the
 point x • G is fast. Going backward from a point X to the count that produced it
 is infeasible once p is large. That backward problem is the discrete logarithm.
 
-In Lean we do not run GrGen. We assume the group exists and state the following.
+In Lean we do not run GrGen. We *assume the group exists* and state the following.
 
 ```lean
 variable (p : ℕ) [Fact p.Prime] {G : Type*} [AddCommGroup G] [Module (ZMod p) G] (g : G)
@@ -498,7 +498,7 @@ parameter, while the paper writes S($1^\lambda$, n). Lifting `n` to a parameter 
 single consistent `n` by construction, at the cost of dropping `n` from the
 signature of `S`.
 
-### 4.7 Correctness
+### 4.6.3 Correctness
 
 Correctness is the first property stated over a `MAC`. The honest run binds `S`,
 `K`, and `M` and returns the verification bit, and correctness says that bit is
@@ -531,7 +531,7 @@ def Correct {𝕄 : Type} {n : ℕ} {ι : Type} {spec : OracleSpec ι}
 simply `False` for it. A concrete construction discharges correctness as a
 separate theorem, `theorem macGGM_correct : Correct macGGM`.
 
-### 4.8 Unforgeability (O24 §3.2, Figure 5)
+### 4.6.4 Unforgeability (O24 §3.2, Figure 5)
 
 Unforgeability is UF-CMVA, unforgeability under a chosen-message-and-verification
 attack. After honest key generation the adversary gets `pp` and queries two
@@ -559,7 +559,7 @@ the game bottom-up in six steps.
 6. **Unforgeability.** The proposition that the advantage is negligible for every
    efficient adversary.
 
-#### 4.8.1 The oracle interfaces
+#### 4.6.4.1 The oracle interfaces
 
 The adversary holds no `sk`, so it cannot run `M` or `V`. It queries the
 challenger instead. An oracle interface is an `OracleSpec`, which is exactly a
@@ -595,7 +595,7 @@ every answer is a `Bool`. These fix only the question and answer types. How an
 answer gets computed, with `sk`, arrives with the handler at step 3. `ufcmvaSpec`
 bundles the three, the scheme's own `spec` plus the two game oracles.
 
-#### 4.8.2 The adversary
+#### 4.6.4.2 The adversary
 
 The adversary is one computation. Given `pp`, it runs over `ufcmvaSpec mac` and
 outputs a forgery `(m*, σ*)`. Summing the specs enlarges the polynomial functor,
@@ -614,7 +614,7 @@ structure ufcmvaAdv (mac : MAC 𝕄 n spec crs sk pp σ) where
 The field `main` is the adversary's strategy. It receives `pp` but never `sk`,
 the asymmetry the game rests on.
 
-#### 4.8.3 The handler
+#### 4.6.4.3 The handler
 
 The handler says how the challenger answers each query, using `sk`. A `QueryImpl`
 is a function from a query input to a computation of its answer. It matches on the
@@ -652,7 +652,7 @@ The specs being `@[reducible]` is what lets the `match` see the answer type of
 each branch. The game (§4.8.4) runs the adversary under this handler with the `sk`
 from keygen, then reads the forgery and Qrs off the `WriterT`.
 
-#### 4.8.4 The game
+#### 4.6.4.4 The game
 
 The game wires the pieces together. It runs setup and keygen honestly, then runs
 the adversary `adv.main pp` under the challenger's handler with `simulateQ`. The
@@ -696,7 +696,7 @@ only the base `spec`, with the log Qrs carried alongside in the `WriterT`. That 
 why the whole game is an ordinary `OracleComp spec Bool`. The adversary never sees
 `sk`; it sees only the outputs the honest calls return.
 
-#### 4.8.5 The advantage
+#### 4.6.4.5 The advantage
 
 The advantage $\mathsf{Adv}^{ufcmva}_{MAC,A}(\lambda, n)$ is the probability the
 game outputs a win. It is `Pr[= true | ufcmvaExp mac adv secParam]`, read off
@@ -716,7 +716,7 @@ noncomputable def advUFCMVA [DecidableEq 𝕄] [HasEvalSPMF (OracleComp spec)]
 
 It is `noncomputable` because `evalDist` is.
 
-#### 4.8.6 The unforgeability notion
+#### 4.6.4.6 The unforgeability notion
 
 UF-CMVA security says that no efficient adversary wins the game with more than
 negligible probability. Two pieces make this precise. Negligibility is supplied by
@@ -744,7 +744,83 @@ def Unforgeable [DecidableEq 𝕄] [HasEvalSPMF (OracleComp spec)]
     negligible (fun secParam => advUFCMVA mac adv secParam)
 ```
 
-As with correctness (§4.7), `Unforgeable` is an external predicate on a `mac`, not
-a field of the `MAC` structure. A concrete construction such as MAC_GGM is then
-shown to satisfy `Unforgeable` as a theorem, under whatever hardness assumption the
-proof needs.
+As with correctness (§4.6.3), `Unforgeable` is an external predicate on a `mac`,
+not a field of the `MAC` structure. A concrete construction such as MAC_GGM is
+then shown to satisfy `Unforgeable` as a theorem, under whatever hardness
+assumption the proof needs.
+
+### 4.7 The MAC_GGM construction (CMZ14)
+
+The definitions so far are an interface and two predicates on it. This section
+gives a concrete `MAC` and proves it correct, which establishes that the interface
+has a demonstrated instance. The construction is MAC_GGM, due to Chase, Meiklejohn,
+and Zaverucha ([CMZ14](https://doi.org/10.1145/2660267.2660328)). It is the scheme
+O24 builds on, written out in O24 only through the µCMZ figures (§2.3 Figure 1,
+§5.1 Figure 9); §3.2 fixes only the abstract interface.
+
+The construction runs over the prime-order group of §2, with scalars ℤ_p. The key
+is `sk = (x₀, x⃗)` with `x₀ ∈ ℤ_p` and `x⃗ ∈ ℤ_p^n`. The message authentication
+code on attributes m is the pair `σ = (U, V)`, where U is sampled uniformly from 𝔾
+and `V = (x₀ + Σᵢ x⃗ᵢ • mᵢ) • U`. Verification recomputes the scalar from `sk` and m
+and checks `V = (x₀ + Σᵢ x⃗ᵢ • mᵢ) • U`. The public parameters are empty here,
+since verification is keyed by `sk` (O24 Figure 5 gives the Verify oracle `sk`).
+
+Plain MAC_GGM has no `U ≠ 0_𝔾` check in verification. O24 notes (§5.1, footnote on
+the µCMZ presentation proof) that this check is absent from CMZ14 and is added for
+the µCMZ variant. Omitting it is what makes the honest run verify with probability
+exactly 1: the honest `V` equals the recomputed scalar applied to U for every U,
+including `U = 0_𝔾`, so verification returns `true` on every sample.
+
+Sampling uses VCVio's `$ᵗ`, the uniform distribution over a `SampleableType`. The
+group `𝔾` and the scalar field ℤ_p carry that instance as hypotheses, alongside
+`DecidableEq 𝔾` for the verification equality. These hold for the Schnorr instance
+of §2.
+
+```lean
+section MACGGM
+
+variable {p : ℕ} [Fact p.Prime] {G : Type} [AddCommGroup G] [Module (ZMod p) G]
+  [DecidableEq G] [SampleableType G] [SampleableType (ZMod p)]
+
+/-- the MAC scalar `x₀ + Σᵢ x⃗ᵢ mᵢ` for key `(x₀, x⃗)` on attributes `m`. -/
+def ggmScalar (n : ℕ) (x0 : ZMod p) (xs m : Fin n → ZMod p) : ZMod p :=
+  x0 + ∑ i, xs i * m i
+
+/-- plain MAC_GGM: `sk = (x₀, x⃗)`, `σ = (U, V)` with `V = (x₀ + Σᵢ x⃗ᵢ mᵢ) • U`. -/
+noncomputable def macGGM (n : ℕ) :
+    MAC (ZMod p) n unifSpec Unit ((ZMod p) × (Fin n → ZMod p)) Unit (G × G) where
+  S _ := pure ()
+  K _ := do
+    let x0 ← $ᵗ (ZMod p)
+    let xs ← $ᵗ (Fin n → ZMod p)
+    return ((x0, xs), ())
+  M := fun ⟨x0, xs⟩ m => do
+    let U ← $ᵗ G
+    return (U, ggmScalar n x0 xs m • U)
+  V := fun ⟨x0, xs⟩ m s =>
+    decide (s.2 = ggmScalar n x0 xs m • s.1)
+
+theorem macGGM_correct (n : ℕ) : Correct (macGGM (p := p) (G := G) n) := by
+  intro secParam m
+  rw [probOutput_eq_one_iff]
+  refine ⟨?_, ?_⟩
+  · simp [honestRun, macGGM]
+  · simp [honestRun, macGGM]
+
+end MACGGM
+```
+
+The proof reduces `Pr[= true | honestRun] = 1` to two facts via
+`probOutput_eq_one_iff`. The first, that the run never fails, holds because the
+only effects are uniform samples over inhabited types. The second, that the support
+is `{true}`, holds because the honest `V` recomputes the same scalar M used, so the
+verification equality is `true` on every sample. Both are closed by `simp`.
+
+Unforgeability is not proved here. MAC_GGM is unforgeable only in the generic group
+model ([CMZ14](https://doi.org/10.1145/2660267.2660328); see §3.7), so a faithful
+statement requires that assumption and a reduction from a forger to a generic-group
+adversary. A bare `theorem macGGM_unforgeable : Unforgeable (macGGM n) efficient`
+quantified over an arbitrary `efficient` would be false, since the trivial
+predicate `fun _ => True` then demands negligible advantage from every adversary,
+which exhaustive key search violates. Stating it correctly is deferred to the
+generic-group development, which is out of the current primitives-only scope.

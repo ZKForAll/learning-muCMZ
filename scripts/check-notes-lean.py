@@ -31,6 +31,7 @@ PREAMBLE = (
     "import VCVio.OracleComp.EvalDist\n"
     "import VCVio.OracleComp.QueryTracking.LoggingOracle\n"
     "import VCVio.CryptoFoundations.Asymptotics.Negligible\n"
+    "import VCVio.OracleComp.Constructions.SampleableType\n"
 )
 
 FENCE = re.compile(r"^```+\s*lean\b", re.IGNORECASE)
