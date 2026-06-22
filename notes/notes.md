@@ -490,7 +490,7 @@ program producing the pair `(sk, pp)`. Correctness and UF-CMVA unforgeability co
 later as predicates over a `MAC`, not as fields.
 
 One simplification remains, shared by both versions. `S` takes only the security
-parameter, while the paper writes `S(1^λ, n)`. Lifting `n` to a parameter keeps a
+parameter, while the paper writes S($1^\lambda$, n). Lifting `n` to a parameter keeps a
 single consistent `n` by construction, at the cost of dropping `n` from the
 signature of `S`.
 
