@@ -1,4 +1,4 @@
-# Learning μCMZ
+# oLearning μCMZ
 
 *or μCMZ in layman's terms...*
 
@@ -759,11 +759,12 @@ O24 builds on, written out in O24 only through the µCMZ figures (§2.3 Figure 1
 §5.1 Figure 9); §3.2 fixes only the abstract interface.
 
 The construction runs over the prime-order group of §2, with scalars ℤ_p. The key
-is `sk = (x₀, x⃗)` with `x₀ ∈ ℤ_p` and `x⃗ ∈ ℤ_p^n`. The message authentication
-code on attributes m is the pair `σ = (U, V)`, where U is sampled uniformly from 𝔾
-and `V = (x₀ + Σᵢ x⃗ᵢ • mᵢ) • U`. Verification recomputes the scalar from `sk` and m
-and checks `V = (x₀ + Σᵢ x⃗ᵢ • mᵢ) • U`. The public parameters are empty here,
-since verification is keyed by `sk` (O24 Figure 5 gives the Verify oracle `sk`).
+is `sk = (x₀, x)` with `x₀ ∈ ℤ_p` and the key vector `x` in $\mathbb{Z}_p^n$. The
+message authentication code on attributes m is the pair `σ = (U, V)`, where U is
+sampled uniformly from 𝔾 and `V = (x₀ + Σᵢ xᵢ • mᵢ) • U`. Verification recomputes
+the scalar from `sk` and m and checks `V = (x₀ + Σᵢ xᵢ • mᵢ) • U`. The public
+parameters are empty here, since verification is keyed by `sk` (O24 Figure 5 gives
+the Verify oracle `sk`).
 
 Plain MAC_GGM has no `U ≠ 0_𝔾` check in verification. O24 notes (§5.1, footnote on
 the µCMZ presentation proof) that this check is absent from CMZ14 and is added for
@@ -782,11 +783,11 @@ section MACGGM
 variable {p : ℕ} [Fact p.Prime] {G : Type} [AddCommGroup G] [Module (ZMod p) G]
   [DecidableEq G] [SampleableType G] [SampleableType (ZMod p)]
 
-/-- the MAC scalar `x₀ + Σᵢ x⃗ᵢ mᵢ` for key `(x₀, x⃗)` on attributes `m`. -/
+/-- the MAC scalar `x₀ + Σᵢ xᵢ mᵢ` for key `(x₀, x)` on attributes `m`. -/
 def ggmScalar (n : ℕ) (x0 : ZMod p) (xs m : Fin n → ZMod p) : ZMod p :=
   x0 + ∑ i, xs i * m i
 
-/-- plain MAC_GGM: `sk = (x₀, x⃗)`, `σ = (U, V)` with `V = (x₀ + Σᵢ x⃗ᵢ mᵢ) • U`. -/
+/-- plain MAC_GGM: `sk = (x₀, x)`, `σ = (U, V)` with `V = (x₀ + Σᵢ xᵢ mᵢ) • U`. -/
 noncomputable def macGGM (n : ℕ) :
     MAC (ZMod p) n unifSpec Unit ((ZMod p) × (Fin n → ZMod p)) Unit (G × G) where
   S _ := pure ()
