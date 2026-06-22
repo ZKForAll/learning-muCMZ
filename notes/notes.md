@@ -680,6 +680,22 @@ def ufcmvaExp [DecidableEq 𝕄] (mac : MAC 𝕄 n spec crs sk pp σ)
   pure (!(decide (mstar ∈ Qrs)) && mac.V sk mstar σstar)
 ```
 
+What `simulateQ` does deserves a closer look. The adversary `adv.main pp` is a
+free-monad tree (§4.2) whose internal nodes are `query` requests tagged by the
+three oracle families in `ufcmvaSpec mac = spec + signSpec mac + verifySpec mac`.
+The tree carries the requests, not the answers, so it is pure syntax. `simulateQ`
+is the interpreter that supplies the answers: it walks the tree and rewrites each
+`query` node using the handler `ufcmvaImpl mac sk`. A `Sign` request becomes an
+honest `mac.M sk` call (after logging the message), a `Verify` request becomes an
+honest `mac.V sk` call, and a base-`spec` request passes straight through.
+
+Rewriting the `Sign` and `Verify` requests into honest scheme calls removes those
+two oracle symbols from the alphabet. This is what "discharge" means: before
+`simulateQ` the program speaks `spec + Sign + Verify`, and afterwards it speaks
+only the base `spec`, with the log Qrs carried alongside in the `WriterT`. That is
+why the whole game is an ordinary `OracleComp spec Bool`. The adversary never sees
+`sk`; it sees only the outputs the honest calls return.
+
 #### 4.8.5 The advantage
 
 The advantage $\mathsf{Adv}^{ufcmva}_{MAC,A}(\lambda, n)$ is the probability the
