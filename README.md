@@ -112,9 +112,13 @@ learning-muCMZ/
 └── resources/            paper PDF (untracked, local only)
 ```
 
-Run `python3 scripts/check-notes-lean.py` to type-check every ```lean block in
-the notes. It extracts the blocks, concatenates them under a Mathlib preamble,
-and runs `lake env lean`.
+The main file is [`notes/notes.md`](notes/notes.md), the project deliverable.
+Every ```lean block in it is type-checked at commit time by the
+`scripts/hooks/pre-commit` git hook, so the notes never contain broken Lean.
+
+Run `python3 scripts/check-notes-lean.py` to type-check the blocks by hand. It
+extracts every ```lean block from `notes/*.md`, concatenates them under a Mathlib
+and VCVio preamble, and runs `lake env lean`.
 
 ## Progress
 

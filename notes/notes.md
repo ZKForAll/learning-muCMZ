@@ -367,12 +367,12 @@ when the signature says how each operation becomes a distribution. A bare
 monad over an oracle signature that supplies it. The handler is a monad morphism,
 so reading the distribution commutes with sequencing.
 
-| | `FreeM Sig` | `PMF` |
-|---|---|---|
-| Layer | syntax, the definition | semantics, the meaning |
-| Holds | operations and their order | a distribution over results |
+|        | `FreeM Sig`                                                  | `PMF`                                         |
+| ------ | -------------------------------------------------------------- | ----------------------------------------------- |
+| Layer  | syntax, the definition                                         | semantics, the meaning                          |
+| Holds  | operations and their order                                     | a distribution over results                     |
 | Solves | many interpretations of one program; hosts the oracles and Qrs | probabilities for correctness and the advantage |
-| Lacks | any probability | the program structure, meaning fixed early |
+| Lacks  | any probability                                                | the program structure, meaning fixed early      |
 
 ### 4.5 OracleComp in VCVio
 
