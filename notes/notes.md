@@ -1,6 +1,6 @@
 # Learning μCMZ
 
-or μCMZ in layman terms...
+*or μCMZ in layman's terms...*
 
 Study notes on the cryptographic primitives underlying μCMZ
 (Orrù 2024, IACR ePrint 2024/1552).
@@ -96,7 +96,7 @@ other than 0 also works as a generator, so the group hides no smaller groups
 inside it. Exactly one step count reaches each point, so x • G for x = 0, 1, …,
 p − 1 lists every point once. And the step counts behave like ordinary arithmetic
 with addition, subtraction, multiplication, and division, because a prime p makes
-the counts mod p, which we write $ℤ_p$, a field.
+the counts mod p, which we write ℤ_p, a field.
 
 The security comes from a one-way effect. Going forward from a count x to the
 point x • G is fast. Going backward from a point X to the count that produced it
@@ -156,17 +156,17 @@ attacker to exploit).
 
 q-DL strengthens DL by handing the attacker a sequence of powers of the secret.
 Someone picks a secret count x and shows the attacker g, x•g, x²•g, up to
-$x^q•g$, the generator stepped by x, by x squared, and so on to the q-th power.
+$x^q$•g, the generator stepped by x, by x squared, and so on to the q-th power.
 Even with this sequence, recovering x stays infeasible. The number q counts how
 many powers the attacker gets, and its advantage is
-$Adv^{q\mathtt{-}dl}_{GrGen,A}(λ)$.
+$Adv^{q\mathtt{-}dl}_{GrGen,A}(\lambda)$.
 
 The extra powers help an attacker. In plain DL there is one clue, x•g, and the
 best general method tries counts until one matches, about $\sqrt{p}$ attempts.
 The powers all come from the same x, so they are related, and that relatedness is
 leverage a single point does not give. The concrete payoff is Cheon's attack
 ([Cheon, EUROCRYPT 2006](https://www.iacr.org/archive/eurocrypt2006/40040001/40040001.pdf)).
-When q divides p − 1, having x•g together with $x^q•g$ lets the attacker split
+When q divides p − 1, having x•g together with $x^q$•g lets the attacker split
 the one big search into two smaller ones and recover x in about $\sqrt{\frac{p}{q}}$
 steps instead of $\sqrt{p}$, roughly $\sqrt{q}$ times faster, a loss of about half
 the bits of q. So a larger q makes the attacker's job easier and the assumption
@@ -175,11 +175,11 @@ weaker, which is why we keep q as small as the application allows.
 ### 3.5 q-Decisional Diffie–Hellman Inversion (q-DDHI)
 
 q-DDHI is the decision counterpart of q-DL. Someone picks a secret count x and
-shows the attacker the sequence x•g, x²•g, up to $x^q•g$. They then show one
+shows the attacker the sequence x•g, x²•g, up to $x^q$•g. They then show one
 extra point, either the inverse point (1/x)•g, where 1/x is the count that undoes
 x modulo p, or a fresh random point Z. q-DDHI says the attacker cannot tell which
 point they got. The inverse point looks the same as a random point, even with the
-whole sequence in hand. Its advantage is $Adv^{q\mathtt{-}ddhi}_{GrGen,A}(λ)$.
+whole sequence in hand. Its advantage is $Adv^{q\mathtt{-}ddhi}_{GrGen,A}(\lambda)$.
 
 q-DL and q-DDHI differ in the task. q-DL asks the attacker to compute the secret
 x, a search problem. q-DDHI asks the attacker to recognize the inverse point, a
@@ -231,7 +231,7 @@ pairings. "Algebraic" means the construction uses only group and scalar
 operations, so the user can later prove possession of a MAC in zero knowledge.
 
 Definition 3.1 gives a MAC as four algorithms, MAC = (S, K, M, V). Setup
-S($1^λ$, n) fixes the security level and the number of attributes n and outputs
+S($1^\lambda$, n) fixes the security level and the number of attributes n and outputs
 public parameters. Key generation K produces a secret key sk and public
 parameters pp, and the issuer holds sk. The MAC algorithm M(sk, $\vec{m}$) takes
 the secret key and attributes $\vec{m} = (m_1, \dots, m_n)$ and outputs a tag σ,
