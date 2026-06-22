@@ -279,8 +279,8 @@ The interface has two operations.
   `>>=` and offers `do` notation for chains of binds.
 
 These operations obey three laws, left identity, right identity, and
-associativity, which make `pure` a neutral step and `bind` associative, so you
-chain steps without surprises. The paper's randomized assignment, crs ← S(…), is
+associativity, which make `pure` a neutral step and `bind` associative, so
+chained binds compose unambiguously. The paper's randomized assignment, crs ← S(…), is
 one `bind` step, and the arrow is the `bind`.
 
 ### 4.2 Free monads over polynomial functors
@@ -655,14 +655,14 @@ def ufcmvaImpl (mac : MAC 𝕄 n spec crs sk pp σ) (key : sk) :
 
 The specs being `@[reducible]` is what lets the `match` see the answer type of
 each branch. The game (§4.6.4.4) runs the adversary under this handler with the `sk`
-from keygen, then reads the forgery and Qrs off the `WriterT`.
+from keygen, then extracts the forgery and Qrs from the `WriterT`.
 
 #### 4.6.4.4 The game
 
-The game wires the pieces together. It runs setup and keygen honestly, then runs
+The game combines the pieces. It runs setup and keygen honestly, then runs
 the adversary `adv.main pp` under the challenger's handler with `simulateQ`. The
 handler's target is the `WriterT`, so `.run` returns the adversary's output paired
-with the accumulated log Qrs. The game reads off the forgery `(mstar, σstar)` and
+with the accumulated log Qrs. The game extracts the forgery `(mstar, σstar)` and
 Qrs, then returns the win condition, which holds when `mstar` is fresh
 (`mstar ∉ Qrs`) and the message authentication code verifies under `sk`. The whole game is an
 `OracleComp spec Bool`, a randomized experiment over the base oracles alone, since
@@ -696,8 +696,8 @@ honest `mac.V sk` call, and a base-`spec` request passes straight through.
 
 Rewriting the `Sign` and `Verify` requests into honest scheme calls removes those
 two oracle symbols from the alphabet. This is the meaning of discharge. Before
-`simulateQ` the program speaks `spec + Sign + Verify`, and afterwards it speaks
-only the base `spec`, with the log Qrs carried alongside in the `WriterT`. That is
+`simulateQ` the program's oracle alphabet is `spec + Sign + Verify`, and afterwards
+it is only the base `spec`, with the log Qrs carried in the `WriterT`. That is
 why the whole game is an ordinary `OracleComp spec Bool`. The adversary never sees
 `sk`; it sees only the outputs the honest calls return.
 
@@ -707,7 +707,7 @@ The advantage $\mathsf{Adv}^{ufcmva}_{MAC,A}(\lambda, n)$ is the probability the
 game outputs a win. It is `Pr[= true | ufcmvaExp mac adv secParam]`, read off
 `evalDist`, so it needs the same `HasEvalSPMF (OracleComp spec)` instance as
 correctness. The result type is `ℝ≥0∞` (`ENNReal`) because that is what the
-probability notation returns. `evalDist` lands in Mathlib's `PMF`, whose masses
+probability notation returns. `evalDist` maps into Mathlib's `PMF`, whose masses
 are `ℝ≥0∞`-valued, matching the measure-theoretic convention. Use `ENNReal.toReal`
 to recover a real-valued bound where one is needed.
 
@@ -795,7 +795,7 @@ the value 1 carrying the mass of both 0 and 1. The honest U is therefore a
 generator but not a uniform one. Correctness uses only nonzeroness, not
 uniformity. O24 samples U uniformly among the generators, which needs a uniform
 nonzero scalar. This VCVio version provides no `SampleableType` for the units of
-ℤ_p, so `nz` is the stand-in adequate for correctness, and the uniform version is
+ℤ_p, so `nz` suffices for correctness, and the uniform version is
 deferred.
 
 Sampling uses VCVio's `$ᵗ`, the uniform distribution over a `SampleableType`. Only
@@ -874,7 +874,7 @@ derives the `Unforgeable` predicate from it.
 The derivation needs one general fact. A function dominated pointwise by a
 negligible function is itself negligible. This is `negligible_of_le`, proved from
 the definition of `negligible` as super-polynomial decay by the squeeze theorem:
-each `secParam ↦ secParam^k · f secParam` is trapped between the constant 0 and
+each `secParam ↦ secParam^k · f secParam` lies between the constant 0 and
 `secParam^k · g secParam`, which tends to 0.
 
 The theorem then takes a negligible bound `B` and a proof `hGGM` that every
