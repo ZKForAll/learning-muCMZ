@@ -652,19 +652,50 @@ The specs being `@[reducible]` is what lets the `match` see the answer type of
 each branch. The game (§4.8.4) runs the adversary under this handler with the `sk`
 from keygen, then reads the forgery and Qrs off the `WriterT`.
 
+#### 4.8.4 The game
+
+The game wires the pieces together. It runs setup and keygen honestly, then runs
+the adversary `adv.main pp` under the challenger's handler with `simulateQ`. The
+handler's target is the `WriterT`, so `.run` returns the adversary's output paired
+with the accumulated log Qrs. The game reads off the forgery `(mstar, σstar)` and
+Qrs, then returns the win condition: `mstar` is fresh (`mstar ∉ Qrs`) and the
+message authentication code verifies under `sk`. The whole game is an
+`OracleComp spec Bool`, a randomized experiment over the base oracles alone, since
+`simulateQ` has discharged the Sign and Verify oracles into honest scheme calls.
+
+The `DecidableEq 𝕄` instance is what makes `mstar ∈ Qrs` decidable: `Qrs` is a
+`List (Fin n → 𝕄)`, and equality of attribute vectors `Fin n → 𝕄` is decidable
+once equality on 𝕄 is, because `Fin n` is finite.
+
+```lean
+variable {𝕄 : Type} {n : ℕ} {σ ι : Type} {spec : OracleSpec ι} {crs sk pp : Type}
+
+/-- the UF-CMVA experiment: honest setup and keygen, run the adversary under the
+challenger's handler, then win iff the forgery is fresh and verifies. -/
+def ufcmvaExp [DecidableEq 𝕄] (mac : MAC 𝕄 n spec crs sk pp σ)
+    (adv : ufcmvaAdv mac) (secParam : ℕ) : OracleComp spec Bool := do
+  let crs      ← mac.S secParam
+  let ⟨sk, pp⟩ ← mac.K crs
+  let ⟨⟨mstar, σstar⟩, Qrs⟩ ← (simulateQ (ufcmvaImpl mac sk) (adv.main pp)).run
+  pure (!(decide (mstar ∈ Qrs)) && mac.V sk mstar σstar)
+```
+
 #### 4.8.5 The advantage
 
 The advantage $\mathsf{Adv}^{ufcmva}_{MAC,A}(\lambda, n)$ is the probability the
 game outputs a win. It is `Pr[= true | ufcmvaExp mac adv secParam]`, read off
 `evalDist`, so it needs the same `HasEvalSPMF (OracleComp spec)` instance as
-correctness. The definition below depends on the game `ufcmvaExp` (§4.8.4), still
-to be written, so it is not yet type-checked. Step 4 (the game) comes first.
+correctness. The result type is `ℝ≥0∞` (`ENNReal`) because that is what the
+probability notation returns: `evalDist` lands in Mathlib's `PMF`, whose masses
+are `ℝ≥0∞`-valued, matching the measure-theoretic convention. A real-valued bound
+is recovered with `ENNReal.toReal` where one is needed.
 
-```text
-noncomputable def advUFCMVA [HasEvalSPMF (OracleComp spec)]
+```lean
+open scoped ENNReal
+
+noncomputable def advUFCMVA [DecidableEq 𝕄] [HasEvalSPMF (OracleComp spec)]
     (mac : MAC 𝕄 n spec crs sk pp σ) (adv : ufcmvaAdv mac) (secParam : ℕ) : ℝ≥0∞ :=
   Pr[= true | ufcmvaExp mac adv secParam]
 ```
 
-It is `noncomputable` because `evalDist` is. Once `ufcmvaExp` exists this becomes
-a checked `lean` block.
+It is `noncomputable` because `evalDist` is.
