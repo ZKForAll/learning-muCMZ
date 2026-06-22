@@ -838,13 +838,71 @@ the support is `{true}`, holds because the honest U is `nz t • g`, nonzero by
 `nz_ne_zero` and `g ≠ 0`, so the `U ≠ 0` check passes, and the verification
 equality holds by construction. Both are closed by `simp`.
 
-Unforgeability is not proved here. With the `U ≠ 0_𝔾` check the degenerate forgery
-above is rejected, and MAC_GGM is unforgeable in the generic group model
-([CMZ14](https://doi.org/10.1145/2660267.2660328); see §3.7). A faithful statement
-requires that assumption and a reduction from a forger to a generic-group
-adversary. A bare `theorem macGGM_unforgeable : Unforgeable (macGGM n g)
-efficient` quantified over an arbitrary `efficient` would be false, since the
-trivial predicate `fun _ => True` then demands negligible advantage from every
-adversary, which exhaustive key search violates. Stating it correctly is deferred
-to the generic-group development, which is out of the current primitives-only
-scope.
+With the `U ≠ 0_𝔾` check the degenerate forgery above is rejected, and MAC_GGM is
+unforgeable in the generic group model
+([CMZ14](https://doi.org/10.1145/2660267.2660328); see §3.7). The next section
+states unforgeability relative to the advantage bound that the generic-group
+analysis provides, rather than constructing the model in Lean.
+
+### 4.8 Unforgeability of MAC_GGM relative to the generic group model
+
+The generic group model is not constructed here. §3.7 describes it, and building it
+in Lean, with the encoding oracle, the handle algebra, and the reduction to a
+polynomial identity, is a separate development. What that analysis delivers is a
+bound on the UF-CMVA advantage: a generic adversary making a bounded number of
+oracle queries forges with advantage no larger than a quantity the model fixes,
+and that quantity is negligible in the security parameter. This section takes the
+bound as a hypothesis and derives the `Unforgeable` predicate from it.
+
+The derivation needs one general fact. A function dominated pointwise by a
+negligible function is itself negligible. This is `negligible_of_le`, proved from
+the definition of `negligible` as super-polynomial decay by the squeeze theorem:
+each `secParam ↦ secParam^k · f secParam` is trapped between the constant 0 and
+`secParam^k · g secParam`, which tends to 0.
+
+The theorem then takes a negligible bound `B` and a proof `hGGM` that every
+efficient adversary's advantage is at most `B` at every security parameter, and
+concludes `Unforgeable (macGGM n g) efficient`. The proof applies the domination
+lemma to each efficient adversary. The hypothesis `hGGM` is exactly the statement
+the generic-group analysis establishes; discharging it by constructing the model
+is the deferred work.
+
+```lean
+open scoped ENNReal
+
+/-- negligibility is preserved under pointwise domination. -/
+lemma negligible_of_le {f g : ℕ → ℝ≥0∞} (hfg : ∀ n, f n ≤ g n)
+    (hg : negligible g) : negligible f := by
+  intro k
+  refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds (hg k)
+    (Filter.Eventually.of_forall fun a => zero_le _)
+    (Filter.Eventually.of_forall fun a => ?_)
+  gcongr
+  exact hfg a
+
+section MACGGM_UF
+
+variable {p : ℕ} [Fact p.Prime] {G : Type} [AddCommGroup G] [Module (ZMod p) G]
+  [DecidableEq G] [SampleableType (ZMod p)]
+
+/-- UF-CMVA of MAC_GGM relative to the generic-group advantage bound `B`. -/
+theorem macGGM_unforgeable (n : ℕ) (g : G)
+    (efficient : ufcmvaAdv (macGGM (p := p) n g) → Prop)
+    (B : ℕ → ℝ≥0∞) (hB : negligible B)
+    (hGGM : ∀ adv, efficient adv →
+        ∀ secParam, advUFCMVA (macGGM (p := p) n g) adv secParam ≤ B secParam) :
+    Unforgeable (macGGM (p := p) n g) efficient := by
+  intro adv hadv
+  exact negligible_of_le (fun secParam => hGGM adv hadv secParam) hB
+
+end MACGGM_UF
+```
+
+The theorem is a conditional, and its hypothesis carries a modeling point. The
+scheme `macGGM n g` is fixed over the single group of §2, so `advUFCMVA (macGGM n g)
+adv secParam` does not vary with `secParam`. A constant function is negligible only
+when it is 0, so for a fixed group the hypothesis forces the advantage to vanish. A
+non-vacuous instantiation indexes the group by the security parameter, taking a
+family whose order grows, so that the generic-group bound genuinely decays. The
+abstract group of §2 is the right place to add that indexing later. The conditional
+theorem holds in either reading; only its non-vacuous use requires the family.
