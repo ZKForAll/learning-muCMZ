@@ -585,7 +585,7 @@ variable {𝕄 : Type} {n : ℕ} {σ ι : Type} {spec : OracleSpec ι} {crs sk p
   spec + signSpec mac + verifySpec mac
 ```
 
-The specs are `@[reducible]` so the handler in §4.8.3 can `match` on the `⊕` sum
+The specs are `@[reducible]` so the handler in §4.6.4.3 can `match` on the `⊕` sum
 and have each branch's answer type reduce.
 
 Each spec takes `mac` so its types come from the scheme, which avoids repeating
@@ -649,7 +649,7 @@ def ufcmvaImpl (mac : MAC 𝕄 n spec crs sk pp σ) (key : sk) :
 ```
 
 The specs being `@[reducible]` is what lets the `match` see the answer type of
-each branch. The game (§4.8.4) runs the adversary under this handler with the `sk`
+each branch. The game (§4.6.4.4) runs the adversary under this handler with the `sk`
 from keygen, then reads the forgery and Qrs off the `WriterT`.
 
 #### 4.6.4.4 The game
@@ -749,14 +749,17 @@ not a field of the `MAC` structure. A concrete construction such as MAC_GGM is
 then shown to satisfy `Unforgeable` as a theorem, under whatever hardness
 assumption the proof needs.
 
-### 4.7 Correctness of MAC_GGM
+### 4.7 MAC_GGM
 
 The definitions so far are an interface and two predicates on it. This section
-gives a concrete `MAC` and proves it correct, which establishes that the interface
-has a demonstrated instance. The construction is MAC_GGM, due to Chase, Meiklejohn,
-and Zaverucha ([CMZ14](https://doi.org/10.1145/2660267.2660328)). It is the scheme
-O24 builds on, written out in O24 only through the µCMZ figures (§2.3 Figure 1,
-§5.1 Figure 9); §3.2 fixes only the abstract interface.
+gives a concrete `MAC`, MAC_GGM, due to Chase, Meiklejohn, and Zaverucha
+([CMZ14](https://doi.org/10.1145/2660267.2660328)). It is the scheme O24 builds on,
+written out in O24 only through the µCMZ figures (§2.3 Figure 1, §5.1 Figure 9);
+§3.2 fixes only the abstract interface. §4.7.1 defines the construction and proves
+correctness, which establishes that the interface has a demonstrated instance.
+§4.7.2 states unforgeability under the generic group model.
+
+#### 4.7.1 Correctness of MAC_GGM
 
 The construction runs over the prime-order group of §2, with scalars ℤ_p. The key
 is `sk = (x₀, x)` with `x₀ ∈ ℤ_p` and the key vector `x` in $\mathbb{Z}_p^n$. The
@@ -844,7 +847,7 @@ unforgeable in the generic group model
 states unforgeability relative to the advantage bound that the generic-group
 analysis provides, rather than constructing the model in Lean.
 
-### 4.8 Unforgeability of MAC_GGM under the generic group model
+#### 4.7.2 Unforgeability of MAC_GGM under the generic group model
 
 The generic group model is not constructed here. §3.7 describes it, and building it
 in Lean, with the encoding oracle, the handle algebra, and the reduction to a
