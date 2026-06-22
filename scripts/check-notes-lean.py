@@ -28,6 +28,7 @@ PREAMBLE = (
     "import ToMathlib.PFunctor.Free\n"
     "import VCVio.OracleComp.ProbComp\n"
     "import VCVio.OracleComp.EvalDist\n"
+    "import VCVio.OracleComp.QueryTracking.LoggingOracle\n"
 )
 
 FENCE = re.compile(r"^```+\s*lean\b", re.IGNORECASE)

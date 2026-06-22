@@ -233,23 +233,25 @@ operations, so the user can later prove possession of a MAC in zero knowledge.
 Definition 3.1 gives a MAC as four algorithms, MAC = (S, K, M, V). Setup
 S($1^\lambda$, n) fixes the security level and the number of attributes n and outputs
 public parameters. Key generation K produces a secret key sk and public
-parameters pp, and the issuer holds sk. The MAC algorithm M(sk, $\vec{m}$) takes
-the secret key and attributes $\vec{m} = (m_1, \dots, m_n)$ and outputs a tag σ,
-the credential on those attributes. Verification V(sk, $\vec{m}$, σ) returns 1
-when the tag is valid and needs sk, which is the keyed part.
+parameters pp, and the issuer holds sk. The MAC algorithm M(sk, m) takes
+the secret key and attributes m = (m₁, …, mₙ) and outputs a message
+authentication code σ,
+the credential on those attributes. Verification V(sk, m, σ) returns 1
+when σ is valid and needs sk, which is the keyed part.
 
 A MAC must satisfy correctness and unforgeability. Correctness means an honestly
-produced tag always verifies. Unforgeability means no efficient attacker produces
-a valid tag on a fresh attribute list. The paper uses UF-CMVA, unforgeability
-under a chosen-message-and-verification attack (Figure 5), where the attacker
-calls a Sign oracle for tags on chosen attributes and a Verify oracle to test
-tags. The Verify oracle grants real power, because the secret key both signs and
-checks. UF-CMVA is a notion, not a proof model, and a proof reaches it for a
+produced message authentication code always verifies. Unforgeability means no
+efficient attacker produces a valid message authentication code on a fresh
+attribute list. The paper uses UF-CMVA, unforgeability under a
+chosen-message-and-verification attack (Figure 5), where the attacker calls a
+Sign oracle for message authentication codes on chosen attributes and a Verify
+oracle to test them. The Verify oracle grants real power, because the secret key
+both authenticates and verifies. UF-CMVA is a notion, not a proof model, and a proof reaches it for a
 concrete scheme in the generic or algebraic group model.
 
 Remark 3.2 notes that algebraic MACs are randomized. You can de-randomize them in
-the random oracle model by deriving the randomness from H($\vec{m}$), so the same
-attributes always yield the same tag.
+the random oracle model by deriving the randomness from H(m), so the same
+attributes always yield the same message authentication code.
 
 We represent each randomized algorithm in Lean as a program in a free monad over
 a polynomial functor, then give it meaning as a probability distribution.
@@ -353,8 +355,9 @@ straight as a distribution keeps none of this structure, so it cannot host the
 oracle layer.
 
 `PMF` is the semantics layer. It is a distribution, the object that carries
-probabilities. It solves the quantitative problem. Correctness says a tag
-verifies with probability 1, and the advantage is a probability, and both are
+probabilities. It solves the quantitative problem. Correctness says a message
+authentication code verifies with probability 1, and the advantage is a
+probability, and both are
 statements about a distribution. A `FreeM` program holds no probabilities, since
 a sampling node is only a label, so you cannot phrase either claim until you
 interpret the program into a `PMF`.
@@ -442,8 +445,9 @@ the correctness statement. It cannot state UF-CMVA, for three reasons.
   distribution, not the steps, so there is no seam to insert the bookkeeping.
 - The signature has no place for the `Sign` and `Verify` oracles or the mutable
   query set Qrs. A `PMF` sequences randomness and nothing else.
-- The adversary needs adaptive oracle access, calling `Sign` and `Verify` and
-  branching on the answers. A `PMF` value is non-interactive.
+- The adversary, the hypothetical party that tries to forge a message
+  authentication code, needs adaptive oracle access, calling `Sign` and `Verify`
+  and branching on the answers. A `PMF` value is non-interactive.
 
 So the `PMF` specification reaches correctness but stops short of unforgeability,
 which is the property the paper proves.
@@ -494,7 +498,7 @@ parameter, while the paper writes S($1^\lambda$, n). Lifting `n` to a parameter 
 single consistent `n` by construction, at the cost of dropping `n` from the
 signature of `S`.
 
-### 4.7 Correctness (work in progress)
+### 4.7 Correctness
 
 Correctness is the first property stated over a `MAC`. The honest run binds `S`,
 `K`, and `M` and returns the verification bit, and correctness says that bit is
@@ -515,7 +519,7 @@ def honestRun {𝕄 : Type} {n : ℕ} {ι : Type} {spec : OracleSpec ι}
   let σ        ← mac.M sk m
   pure (mac.V sk m σ)
 
-/-- O24 §3.2: an honestly produced tag always verifies -/
+/-- O24 §3.2: an honestly produced message authentication code always verifies -/
 def Correct {𝕄 : Type} {n : ℕ} {ι : Type} {spec : OracleSpec ι}
     {crs sk pp σ : Type} [HasEvalSPMF (OracleComp spec)]
     (mac : MAC 𝕄 n spec crs sk pp σ) : Prop :=
@@ -526,3 +530,141 @@ def Correct {𝕄 : Type} {n : ℕ} {ι : Type} {spec : OracleSpec ι}
 `mac` whose `V` rejects is a valid inhabitant of the structure, and `Correct` is
 simply `False` for it. A concrete construction discharges correctness as a
 separate theorem, `theorem macGGM_correct : Correct macGGM`.
+
+### 4.8 Unforgeability (O24 §3.2, Figure 5)
+
+Unforgeability is UF-CMVA, unforgeability under a chosen-message-and-verification
+attack. After honest key generation the adversary gets `pp` and queries two
+oracles that the challenger, the honest party that runs the scheme and holds
+`sk`, answers. `Sign(m)` returns
+`M(sk, m)` and logs m, and `Verify(m, σ)` returns
+`V(sk, m, σ)`. The adversary outputs `(m*, σ*)` and wins when `m*` was
+never authenticated and `V(sk, m*, σ*)` accepts. The advantage is the probability of
+winning, and the scheme is unforgeable when it stays negligible for every
+efficient adversary.
+
+Two things are new with respect to correctness. Oracle access lets the keyless
+adversary call `Sign` and `Verify` as black boxes, modeling an attacker that
+requests message authentication codes and tests forgeries without holding `sk`.
+The query log records the `Sign` queries, and the freshness check `m* ∉ Qrs`
+separates a forgery from replaying a σ the challenger already produced. We build
+the game bottom-up in six steps.
+
+1. **Oracle interfaces.** The `Sign` and `Verify` query and answer types.
+2. **Adversary.** A computation with access to those oracles, producing a forgery.
+3. **Handler.** How the challenger answers the oracles with `sk`, logging `Sign`.
+4. **The game.** Generate keys, run the adversary under the handler, check the
+   forgery.
+5. **Advantage.** The probability the game outputs a win.
+6. **Unforgeability.** The proposition that the advantage is negligible for every
+   efficient adversary.
+
+#### 4.8.1 The oracle interfaces
+
+The adversary holds no `sk`, so it cannot run `M` or `V`. It queries the
+challenger instead. An oracle interface is an `OracleSpec`, which is exactly a
+polynomial functor, since `OracleComp spec = FreeM spec.toPFunctor` (§4.2, §4.5).
+Its index type is the set of queries and its value at each index is that query's
+answer type.
+
+```lean
+open OracleSpec OracleComp
+
+variable {𝕄 : Type} {n : ℕ} {σ ι : Type} {spec : OracleSpec ι} {crs sk pp : Type}
+
+/-- `Sign` oracle: query an attribute vector, answer a message authentication code σ. -/
+@[reducible] def signSpec (_mac : MAC 𝕄 n spec crs sk pp σ) : OracleSpec (Fin n → 𝕄) :=
+  (Fin n → 𝕄) →ₒ σ
+
+/-- `Verify` oracle: query an (attributes, σ) pair, answer a `Bool`. -/
+@[reducible] def verifySpec (_mac : MAC 𝕄 n spec crs sk pp σ) : OracleSpec ((Fin n → 𝕄) × σ) :=
+  ((Fin n → 𝕄) × σ) →ₒ Bool
+
+/-- the adversary's signature: the scheme's own oracles plus `Sign` and `Verify`. -/
+@[reducible] def ufcmvaSpec (mac : MAC 𝕄 n spec crs sk pp σ) :=
+  spec + signSpec mac + verifySpec mac
+```
+
+The specs are `@[reducible]` so the handler in §4.8.3 can `match` on the `⊕` sum
+and have each branch's answer type reduce.
+
+Each spec takes `mac` so its types come from the scheme, which avoids repeating
+`𝕄 n σ` at every use. For `signSpec` the shapes are the attribute vectors and
+every answer is a σ; for `verifySpec` the shapes are `(attributes, σ)` pairs and
+every answer is a `Bool`. These fix only the question and answer types. How an
+answer gets computed, with `sk`, arrives with the handler at step 3. `ufcmvaSpec`
+bundles the three, the scheme's own `spec` plus the two game oracles.
+
+#### 4.8.2 The adversary
+
+The adversary is one computation. Given `pp`, it runs over `ufcmvaSpec mac` and
+outputs a forgery `(m*, σ*)`. Summing the specs enlarges the polynomial functor,
+so its program may make a base-`spec` draw, a `Sign` query, or a `Verify` query at
+any node. We wrap it in a one-field structure so later definitions can name it.
+
+```lean
+variable {𝕄 : Type} {n : ℕ} {σ ι : Type} {spec : OracleSpec ι} {crs sk pp : Type}
+
+/-- UF-CMVA adversary: given `pp`, queries the oracles of `ufcmvaSpec mac` and
+outputs a forgery `(m*, σ*)`. -/
+structure ufcmvaAdv (mac : MAC 𝕄 n spec crs sk pp σ) where
+  main : pp → OracleComp (ufcmvaSpec mac) ((Fin n → 𝕄) × σ)
+```
+
+The field `main` is the adversary's strategy. It receives `pp` but never `sk`,
+the asymmetry the game rests on.
+
+#### 4.8.3 The handler
+
+The handler says how the challenger answers each query, using `sk`. A `QueryImpl`
+is a function from a query input to a computation of its answer. It matches on the
+`⊕` sum of `ufcmvaSpec`: a base-`spec` query passes straight through, `Sign(msg)`
+logs `msg` and runs `M`, and `Verify` runs `V`. The target monad
+`WriterT (List (Fin n → 𝕄)) (OracleComp spec)` adds the query log Qrs, the list of
+authenticated attribute vectors, on top of the scheme's own `OracleComp`. Only
+`Sign` writes to the log.
+
+The log exists for the freshness check. The adversary is a black box, and the
+game sees only its final output `(m*, σ*)`. A forgery means a valid message
+authentication code on a message the adversary never had authenticated, so the game must
+remember which messages went to the `Sign` oracle during the run. That record
+lives nowhere else, it is produced only as a side effect of the interaction, so
+the handler accumulates it. Without it a replay wins trivially: the adversary
+calls `Sign(m)`, receives a valid σ, and returns `(m, σ)`, which verifies. The
+log lets the game reject exactly those, since `m* ∈ Qrs` is not a forgery. Only
+`Sign` queries matter here, because freshness is about which messages got
+authenticated.
+
+```lean
+variable {𝕄 : Type} {n : ℕ} {σ ι : Type} {spec : OracleSpec ι} {crs sk pp : Type}
+
+/-- the challenger's handler holding `sk = key`: a base-`spec` query passes through,
+`Sign` logs the message and runs `M`, `Verify` runs `V`. The `WriterT` log is Qrs. -/
+def ufcmvaImpl (mac : MAC 𝕄 n spec crs sk pp σ) (key : sk) :
+    QueryImpl (ufcmvaSpec mac) (WriterT (List (Fin n → 𝕄)) (OracleComp spec)) :=
+  fun x => match x with
+    | Sum.inl (Sum.inl i)   => liftM (query (spec := spec) i)
+    | Sum.inl (Sum.inr msg) => do tell [msg]; liftM (mac.M key msg)
+    | Sum.inr q             => pure (mac.V key q.1 q.2)
+```
+
+The specs being `@[reducible]` is what lets the `match` see the answer type of
+each branch. The game (§4.8.4) runs the adversary under this handler with the `sk`
+from keygen, then reads the forgery and Qrs off the `WriterT`.
+
+#### 4.8.5 The advantage
+
+The advantage $\mathsf{Adv}^{ufcmva}_{MAC,A}(\lambda, n)$ is the probability the
+game outputs a win. It is `Pr[= true | ufcmvaExp mac adv secParam]`, read off
+`evalDist`, so it needs the same `HasEvalSPMF (OracleComp spec)` instance as
+correctness. The definition below depends on the game `ufcmvaExp` (§4.8.4), still
+to be written, so it is not yet type-checked. Step 4 (the game) comes first.
+
+```text
+noncomputable def advUFCMVA [HasEvalSPMF (OracleComp spec)]
+    (mac : MAC 𝕄 n spec crs sk pp σ) (adv : ufcmvaAdv mac) (secParam : ℕ) : ℝ≥0∞ :=
+  Pr[= true | ufcmvaExp mac adv secParam]
+```
+
+It is `noncomputable` because `evalDist` is. Once `ufcmvaExp` exists this becomes
+a checked `lean` block.
