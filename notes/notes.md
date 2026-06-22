@@ -1,4 +1,4 @@
-# oLearning μCMZ
+# Learning μCMZ
 
 *or μCMZ in layman's terms...*
 
@@ -531,10 +531,10 @@ def Correct {𝕄 : Type} {n : ℕ} {ι : Type} {spec : OracleSpec ι}
 simply `False` for it. A concrete construction discharges correctness as a
 separate theorem, `theorem macGGM_correct : Correct macGGM`.
 
-### 4.6.4 Unforgeability (O24 §3.2, Figure 5)
+### 4.6.4 Unforgeability
 
 Unforgeability is UF-CMVA, unforgeability under a chosen-message-and-verification
-attack. After honest key generation the adversary gets `pp` and queries two
+attack. (O24 §3.2, Figure 5) After honest key generation the adversary gets `pp` and queries two
 oracles that the challenger, the honest party that runs the scheme and holds
 `sk`, answers. `Sign(m)` returns
 `M(sk, m)` and logs m, and `Verify(m, σ)` returns
@@ -749,7 +749,7 @@ not a field of the `MAC` structure. A concrete construction such as MAC_GGM is
 then shown to satisfy `Unforgeable` as a theorem, under whatever hardness
 assumption the proof needs.
 
-### 4.7 The MAC_GGM construction (CMZ14)
+### 4.7 MAC_GGM
 
 The definitions so far are an interface and two predicates on it. This section
 gives a concrete `MAC` and proves it correct, which establishes that the interface
@@ -760,35 +760,53 @@ O24 builds on, written out in O24 only through the µCMZ figures (§2.3 Figure 1
 
 The construction runs over the prime-order group of §2, with scalars ℤ_p. The key
 is `sk = (x₀, x)` with `x₀ ∈ ℤ_p` and the key vector `x` in $\mathbb{Z}_p^n$. The
-message authentication code on attributes m is the pair `σ = (U, V)`, where U is
-sampled uniformly from 𝔾 and `V = (x₀ + Σᵢ xᵢ • mᵢ) • U`. Verification recomputes
-the scalar from `sk` and m and checks `V = (x₀ + Σᵢ xᵢ • mᵢ) • U`. The public
-parameters are empty here, since verification is keyed by `sk` (O24 Figure 5 gives
-the Verify oracle `sk`).
+message authentication code on attributes m is the pair `σ = (U, V)`. Here U is a
+random generator of 𝔾 and `V = (x₀ + Σᵢ xᵢ • mᵢ) • U`. Verification recomputes the
+scalar from `sk` and m and checks both `U ≠ 0_𝔾` and `V = (x₀ + Σᵢ xᵢ • mᵢ) • U`.
+The public parameters are empty here, since verification is keyed by `sk` (O24
+Figure 5 gives the Verify oracle `sk`).
 
-Plain MAC_GGM has no `U ≠ 0_𝔾` check in verification. O24 notes (§5.1, footnote on
-the µCMZ presentation proof) that this check is absent from CMZ14 and is added for
-the µCMZ variant. Omitting it is what makes the honest run verify with probability
-exactly 1: the honest `V` equals the recomputed scalar applied to U for every U,
-including `U = 0_𝔾`, so verification returns `true` on every sample.
+The `U ≠ 0_𝔾` check is necessary. O24 notes (§5.1, footnote on the µCMZ
+presentation proof) that the check is absent from CMZ14 and is required for
+security. Without it the pair `(0_𝔾, 0_𝔾)` satisfies `V = (x₀ + Σᵢ xᵢ • mᵢ) • 0_𝔾`,
+which is `0_𝔾 = 0_𝔾`, for every key and every attribute vector. The adversary then
+outputs `(m*, (0_𝔾, 0_𝔾))` for any fresh `m*`, makes no oracle query, and wins the
+UF-CMVA game with probability 1. The check rejects this degenerate pair.
 
-Sampling uses VCVio's `$ᵗ`, the uniform distribution over a `SampleableType`. The
-group `𝔾` and the scalar field ℤ_p carry that instance as hypotheses, alongside
-`DecidableEq 𝔾` for the verification equality. These hold for the Schnorr instance
-of §2.
+The check forces correctness to depend on the honest U being nonzero. The honest M
+samples U as a generator, which in a group of prime order is any nonzero element.
+The construction draws a scalar `t ←$ᵗ ℤ_p`, forces it nonzero with `nz t`
+(mapping 0 to 1), and sets `U = nz t • g` for the fixed generator `g`. Since ℤ_p is
+a field, `nz t ≠ 0` and `g ≠ 0` give `nz t • g ≠ 0`, because a module over a field
+has `NoZeroSMulDivisors`. So the honest U is nonzero on every sample, the `U ≠ 0_𝔾`
+check passes, the verification equality holds by construction, and the honest run
+verifies with probability exactly 1.
+
+Sampling uses VCVio's `$ᵗ`, the uniform distribution over a `SampleableType`. Only
+the scalar field ℤ_p needs that instance, since U is built from a sampled scalar
+rather than drawn from 𝔾 directly. The construction also takes the generator `g`
+with a proof `g ≠ 0`, and `DecidableEq 𝔾` for the verification check. These hold
+for the Schnorr instance of §2.
 
 ```lean
+/-- force a scalar to be nonzero (0 ↦ 1). -/
+def nz {p : ℕ} (t : ZMod p) : ZMod p := if t = 0 then 1 else t
+
+lemma nz_ne_zero {p : ℕ} [Fact p.Prime] (t : ZMod p) : nz t ≠ 0 := by
+  unfold nz; split <;> simp_all
+
 section MACGGM
 
 variable {p : ℕ} [Fact p.Prime] {G : Type} [AddCommGroup G] [Module (ZMod p) G]
-  [DecidableEq G] [SampleableType G] [SampleableType (ZMod p)]
+  [DecidableEq G] [SampleableType (ZMod p)]
 
 /-- the MAC scalar `x₀ + Σᵢ xᵢ mᵢ` for key `(x₀, x)` on attributes `m`. -/
 def ggmScalar (n : ℕ) (x0 : ZMod p) (xs m : Fin n → ZMod p) : ZMod p :=
   x0 + ∑ i, xs i * m i
 
-/-- plain MAC_GGM: `sk = (x₀, x)`, `σ = (U, V)` with `V = (x₀ + Σᵢ xᵢ mᵢ) • U`. -/
-noncomputable def macGGM (n : ℕ) :
+/-- plain MAC_GGM: `sk = (x₀, x)`, `σ = (U, V)` with `U = t • g` for a nonzero `t`
+and `V = (x₀ + Σᵢ xᵢ mᵢ) • U`; verification checks `U ≠ 0` and the equation. -/
+noncomputable def macGGM (n : ℕ) (g : G) (hg : g ≠ 0) :
     MAC (ZMod p) n unifSpec Unit ((ZMod p) × (Fin n → ZMod p)) Unit (G × G) where
   S _ := pure ()
   K _ := do
@@ -796,32 +814,37 @@ noncomputable def macGGM (n : ℕ) :
     let xs ← $ᵗ (Fin n → ZMod p)
     return ((x0, xs), ())
   M := fun ⟨x0, xs⟩ m => do
-    let U ← $ᵗ G
+    let t ← $ᵗ (ZMod p)
+    let U := nz t • g
     return (U, ggmScalar n x0 xs m • U)
   V := fun ⟨x0, xs⟩ m s =>
-    decide (s.2 = ggmScalar n x0 xs m • s.1)
+    decide (s.1 ≠ 0 ∧ s.2 = ggmScalar n x0 xs m • s.1)
 
-theorem macGGM_correct (n : ℕ) : Correct (macGGM (p := p) (G := G) n) := by
+theorem macGGM_correct (n : ℕ) (g : G) (hg : g ≠ 0) :
+    Correct (macGGM (p := p) n g hg) := by
   intro secParam m
   rw [probOutput_eq_one_iff]
   refine ⟨?_, ?_⟩
   · simp [honestRun, macGGM]
-  · simp [honestRun, macGGM]
+  · simp [honestRun, macGGM, nz_ne_zero, hg]
 
 end MACGGM
 ```
 
 The proof reduces `Pr[= true | honestRun] = 1` to two facts via
 `probOutput_eq_one_iff`. The first, that the run never fails, holds because the
-only effects are uniform samples over inhabited types. The second, that the support
-is `{true}`, holds because the honest `V` recomputes the same scalar M used, so the
-verification equality is `true` on every sample. Both are closed by `simp`.
+only effects are uniform scalar samples over an inhabited type. The second, that
+the support is `{true}`, holds because the honest U is `nz t • g`, nonzero by
+`nz_ne_zero` and `g ≠ 0`, so the `U ≠ 0` check passes, and the verification
+equality holds by construction. Both are closed by `simp`.
 
-Unforgeability is not proved here. MAC_GGM is unforgeable only in the generic group
-model ([CMZ14](https://doi.org/10.1145/2660267.2660328); see §3.7), so a faithful
-statement requires that assumption and a reduction from a forger to a generic-group
-adversary. A bare `theorem macGGM_unforgeable : Unforgeable (macGGM n) efficient`
-quantified over an arbitrary `efficient` would be false, since the trivial
-predicate `fun _ => True` then demands negligible advantage from every adversary,
-which exhaustive key search violates. Stating it correctly is deferred to the
-generic-group development, which is out of the current primitives-only scope.
+Unforgeability is not proved here. With the `U ≠ 0_𝔾` check the degenerate forgery
+above is rejected, and MAC_GGM is unforgeable in the generic group model
+([CMZ14](https://doi.org/10.1145/2660267.2660328); see §3.7). A faithful statement
+requires that assumption and a reduction from a forger to a generic-group
+adversary. A bare `theorem macGGM_unforgeable : Unforgeable (macGGM n g hg)
+efficient` quantified over an arbitrary `efficient` would be false, since the
+trivial predicate `fun _ => True` then demands negligible advantage from every
+adversary, which exhaustive key search violates. Stating it correctly is deferred
+to the generic-group development, which is out of the current primitives-only
+scope.
