@@ -757,7 +757,7 @@ gives a concrete `MAC`, MAC_GGM, due to Chase, Meiklejohn, and Zaverucha
 written out in O24 only through the µCMZ figures (§2.3 Figure 1, §5.1 Figure 9);
 §3.2 fixes only the abstract interface. §4.7.1 defines the construction and proves
 correctness, which establishes that the interface has a demonstrated instance.
-§4.7.2 states unforgeability under the generic group model.
+§4.7.2 states unforgeability under the GGM hardness assumption.
 
 #### 4.7.1 Correctness of MAC_GGM
 
@@ -847,7 +847,7 @@ unforgeable in the generic group model
 states unforgeability relative to the advantage bound that the generic-group
 analysis provides, rather than constructing the model in Lean.
 
-#### 4.7.2 Unforgeability of MAC_GGM under the generic group model
+#### 4.7.2 Unforgeability of MAC_GGM under the GGM hardness assumption
 
 The generic group model is not constructed here. §3.7 describes it, and building it
 in Lean, with the encoding oracle, the handle algebra, and the reduction to a
