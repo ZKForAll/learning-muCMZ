@@ -18,12 +18,12 @@ Background that μCMZ takes for granted.
 Crypto needs operations that run easily one way but resist undoing, and modular
 arithmetic supplies that along with a few other properties.
 
-It makes operations easy forward and hard backward. Modular arithmetic wraps
-numbers around a fixed size, like a clock that resets after 12. Stepping forward
-on the clock runs fast, but the wrap-around hides how many steps you took, so the
-final position tells you little about the count. The hard problems crypto rests
-on, the discrete logarithm and factoring, only become hard in this wrap-around
-setting.
+It makes operations easy forward and hard backward. Modular arithmetic reduces
+every integer modulo a fixed size n, so each value has a residue in a fixed range.
+Computing the residue forward is fast, but the reduction discards the multiple of
+n, so the residue reveals little about the original count. The hard problems
+crypto rests on, the discrete logarithm and factoring, only become hard in this
+modular setting.
 
 It keeps numbers finite and exact. Every value stays in the range 0 to n − 1, so
 a computer stores and computes it exactly and fast, with no rounding and no
@@ -31,12 +31,12 @@ values that grow without bound.
 
 It gives a clean number system. Working mod a prime p lets you add, subtract,
 multiply, and divide, the same four operations you expect from ordinary numbers,
-and protocols lean on this, for example when a proof divides by a challenge.
+and protocols rely on this, for example when a proof divides by a challenge.
 Working mod a composite gives a different structure tied to factoring.
 
-It spreads values evenly. Residues mod p come out uniform, so a random count
-yields a result that looks uniform, and this lets a sender hide a value by adding
-a random one, which underlies commitments and blinding.
+It distributes values uniformly. Residues mod p are uniform, so reducing a uniform
+random count yields a uniform residue, and this lets a sender hide a value by
+adding a random one, which underlies commitments and blinding.
 
 ### 1.2 Groups
 
@@ -50,16 +50,16 @@ define stepping, the repeated operation, and to reverse it.
 
 Repeating the operation builds the one-way function. Adding g to itself x times
 gives x•g, which runs fast, but recovering x stays infeasible, the discrete
-logarithm. Groups make this stepping well-defined and quick even for huge counts,
-through doubling tricks.
+logarithm. Groups make this stepping well-defined and quick even for large counts,
+through double-and-add.
 
 The operation also lets you compute on hidden values. Combining a•g and b•g gives
 (a+b)•g, so you add secret counts while they stay hidden in the exponent. This
 homomorphism powers key exchange, commitments, and encryption.
 
 An abstract group keeps protocols portable. You state a scheme and its security
-once over any group where the discrete logarithm stays hard, then plug in a
-concrete instance, a mod-p group or an elliptic curve, without touching the
+once over any group where the discrete logarithm stays hard, then instantiate it
+with a concrete group, a mod-p group or an elliptic curve, without touching the
 protocol or its proofs. We do exactly this below, stating the primitives over an
 abstract prime-order group and instantiating it with a Schnorr group.
 
@@ -87,7 +87,7 @@ Everything in μCMZ builds on one object, a group 𝔾. Picture a fixed collecti
 points with one operation that combines two points into a third. We write this
 operation as addition. One point, 0, does nothing when we add it, and another
 point, G, serves as the starting point, the generator. Adding G to itself x times
-gives a point we write x • G. The setup step GrGen hands you this object together
+gives a point we write x • G. The setup step GrGen returns this object together
 with the number of points p and the generator G, and packages them as
 Γ = (𝔾, p, G).
 
@@ -130,8 +130,8 @@ measures each one, a number for how well an attacker does.
 
 The generator g is public and so is the stepping rule. Given a random point X,
 finding the step count x with x • g = X is infeasible once p is large. Forward,
-from x to X, runs fast. Backward, from X to x, has no known shortcut beyond
-trying counts one by one over a huge range.
+from x to X, runs fast. Backward, from X to x, has no known method faster than
+trying counts one by one over ℤ_p.
 
 ### 3.2 Decisional Diffie–Hellman (DDH)
 
@@ -154,7 +154,7 @@ attacker to exploit).
 
 ### 3.4 q-discrete logarithm (q-DL)
 
-q-DL strengthens DL by handing the attacker a sequence of powers of the secret.
+q-DL strengthens DL by giving the attacker a sequence of powers of the secret.
 Someone picks a secret count x and shows the attacker g, x•g, x²•g, up to
 $x^q$•g, the generator stepped by x, by x squared, and so on to the q-th power.
 Even with this sequence, recovering x stays infeasible. The number q counts how
@@ -180,8 +180,8 @@ q-DDHI is the decision counterpart of q-DL. Someone picks a secret count x and
 shows the attacker the sequence x•g, x²•g, up to $x^q$•g. They then show one
 extra point, either the inverse point (1/x)•g, where 1/x is the count that undoes
 x modulo p, or a fresh random point Z. q-DDHI says the attacker cannot tell which
-point they got. The inverse point looks the same as a random point, even with the
-whole sequence in hand. Its advantage is $\mathsf{Adv}^{q\mathtt{-}ddhi}_{GrGen,A}(\lambda)$.
+point they got. The inverse point looks the same as a random point, even given the
+whole sequence. Its advantage is $\mathsf{Adv}^{q\mathtt{-}ddhi}_{GrGen,A}(\lambda)$.
 
 q-DL and q-DDHI differ in the task. q-DL asks the attacker to compute the secret
 x, a search problem. q-DDHI asks the attacker to recognize the inverse point, a
