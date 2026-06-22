@@ -224,9 +224,9 @@ allows it but requires the attacker to output it, so the GGM is the more
 idealized model and its proofs can miss attacks that exploit the real encoding,
 such as index calculus on multiplicative groups.
 
-## 4. Algebraic message authentication codes (O24 §3.2)
+## 4. Algebraic message authentication codes
 
-A message authentication code (MAC) authenticates a message. The same secret key
+A message authentication code (MAC, O24 §3.2) authenticates a message. The same secret key
 produces the MAC and verifies it. A signature instead verifies with a public key,
 and only its private key produces it. A keyed-verification credential makes the
 issuer and the verifier the same party, so a MAC suffices and the scheme avoids
@@ -304,8 +304,9 @@ inductive FreeM (P : PFunctor.{uA, uB}) : Type v → Type (max uA uB v)
 ```
 
 from `ToMathlib.PFunctor.Free`. A program in `FreeM P α` is a finite tree of
-operations whose leaves carry an `α`. The monad's `bind` grafts the next program
-onto every leaf, and `pure` is a bare leaf, so `do` notation builds these trees.
+operations whose leaves carry an `α`. The monad's `bind` substitutes the next
+program at every leaf, and `pure` is a single leaf, so `do` notation builds these
+trees.
 
 ```lean
 open PFunctor
@@ -318,13 +319,14 @@ example (Sig : PFunctor) (p : FreeM Sig ℕ) : FreeM Sig ℕ := do
   pure (x + 1)
 ```
 
-The codomain rises one universe. A node stores a function out of the positions
-`P.B a`, a type in `Type uB`, into the tree, and the leaves carry a result in
-`Type v`, so the tree cannot stay at `Type v`. It lands at `Type (max uA uB v)`,
-the universe bump in the signature above. Mathlib keeps the shape universe `uA`
-and the position universe `uB` separate, so both appear in the bump. The bump is
-what lets `FreeM P` still count as a `Monad`, since Lean's universe polymorphism
-accepts the raised codomain.
+The result universe is raised. The `roll` node stores a shape `a : P.A`, a type in
+`Type uA`, together with a continuation `P.B a → FreeM P α` whose domain `P.B a` is
+a type in `Type uB`. The `pure` leaves carry a result in `Type v`. A value of
+`FreeM P α` therefore mentions all three universes, so its type is not `Type v` but
+`Type (max uA uB v)`, the universe bump in the signature above. Mathlib keeps the
+shape universe `uA` and the position universe `uB` separate, so both appear in the
+maximum. The codomain remains a `Type`, so `FreeM P` is a `Monad` under Lean's
+universe polymorphism.
 
 ### 4.3 Probabilistic monads
 
@@ -914,8 +916,7 @@ end MACGGM_UF
 ```
 
 The theorem is a conditional, and its hypothesis carries a modeling point. The
-scheme `macGGM n g` is fixed over the single group of §2, so `advUFCMVA (macGGM n g)
-adv secParam` does not vary with `secParam`. A constant function is negligible only
+scheme `macGGM n g` is fixed over the single group of §2, so `advUFCMVA (macGGM n g) adv secParam` does not vary with `secParam`. A constant function is negligible only
 when it is 0, so for a fixed group the hypothesis forces the advantage to vanish. A
 non-vacuous instantiation indexes the group by the security parameter, taking a
 family whose order grows, so that the generic-group bound genuinely decays. The
