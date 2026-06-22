@@ -628,8 +628,8 @@ The log exists for the freshness check. The adversary is a black box, and the
 game sees only its final output `(m*, σ*)`. A forgery means a valid message
 authentication code on a message the adversary never had authenticated, so the game must
 remember which messages went to the `Sign` oracle during the run. That record
-lives nowhere else, it is produced only as a side effect of the interaction, so
-the handler accumulates it. Without it a replay wins trivially: the adversary
+lives nowhere else. It is produced only as a side effect of the interaction, so
+the handler accumulates it. Without it a replay wins trivially. The adversary
 calls `Sign(m)`, receives a valid σ, and returns `(m, σ)`, which verifies. The
 log lets the game reject exactly those, since `m* ∈ Qrs` is not a forgery. Only
 `Sign` queries matter here, because freshness is about which messages got
@@ -658,12 +658,12 @@ The game wires the pieces together. It runs setup and keygen honestly, then runs
 the adversary `adv.main pp` under the challenger's handler with `simulateQ`. The
 handler's target is the `WriterT`, so `.run` returns the adversary's output paired
 with the accumulated log Qrs. The game reads off the forgery `(mstar, σstar)` and
-Qrs, then returns the win condition: `mstar` is fresh (`mstar ∉ Qrs`) and the
-message authentication code verifies under `sk`. The whole game is an
+Qrs, then returns the win condition, which holds when `mstar` is fresh
+(`mstar ∉ Qrs`) and the message authentication code verifies under `sk`. The whole game is an
 `OracleComp spec Bool`, a randomized experiment over the base oracles alone, since
 `simulateQ` has discharged the Sign and Verify oracles into honest scheme calls.
 
-The `DecidableEq 𝕄` instance is what makes `mstar ∈ Qrs` decidable: `Qrs` is a
+The `DecidableEq 𝕄` instance is what makes `mstar ∈ Qrs` decidable. `Qrs` is a
 `List (Fin n → 𝕄)`, and equality of attribute vectors `Fin n → 𝕄` is decidable
 once equality on 𝕄 is, because `Fin n` is finite.
 
@@ -680,17 +680,17 @@ def ufcmvaExp [DecidableEq 𝕄] (mac : MAC 𝕄 n spec crs sk pp σ)
   pure (!(decide (mstar ∈ Qrs)) && mac.V sk mstar σstar)
 ```
 
-What `simulateQ` does deserves a closer look. The adversary `adv.main pp` is a
+The adversary `adv.main pp` is a
 free-monad tree (§4.2) whose internal nodes are `query` requests tagged by the
 three oracle families in `ufcmvaSpec mac = spec + signSpec mac + verifySpec mac`.
 The tree carries the requests, not the answers, so it is pure syntax. `simulateQ`
-is the interpreter that supplies the answers: it walks the tree and rewrites each
+is the interpreter that supplies the answers. It walks the tree and rewrites each
 `query` node using the handler `ufcmvaImpl mac sk`. A `Sign` request becomes an
 honest `mac.M sk` call (after logging the message), a `Verify` request becomes an
 honest `mac.V sk` call, and a base-`spec` request passes straight through.
 
 Rewriting the `Sign` and `Verify` requests into honest scheme calls removes those
-two oracle symbols from the alphabet. This is what "discharge" means: before
+two oracle symbols from the alphabet. This is the meaning of discharge. Before
 `simulateQ` the program speaks `spec + Sign + Verify`, and afterwards it speaks
 only the base `spec`, with the log Qrs carried alongside in the `WriterT`. That is
 why the whole game is an ordinary `OracleComp spec Bool`. The adversary never sees
@@ -702,9 +702,9 @@ The advantage $\mathsf{Adv}^{ufcmva}_{MAC,A}(\lambda, n)$ is the probability the
 game outputs a win. It is `Pr[= true | ufcmvaExp mac adv secParam]`, read off
 `evalDist`, so it needs the same `HasEvalSPMF (OracleComp spec)` instance as
 correctness. The result type is `ℝ≥0∞` (`ENNReal`) because that is what the
-probability notation returns: `evalDist` lands in Mathlib's `PMF`, whose masses
-are `ℝ≥0∞`-valued, matching the measure-theoretic convention. A real-valued bound
-is recovered with `ENNReal.toReal` where one is needed.
+probability notation returns. `evalDist` lands in Mathlib's `PMF`, whose masses
+are `ℝ≥0∞`-valued, matching the measure-theoretic convention. Use `ENNReal.toReal`
+to recover a real-valued bound where one is needed.
 
 ```lean
 open scoped ENNReal
@@ -777,13 +777,21 @@ outputs `(m*, (0_𝔾, 0_𝔾))` for any fresh `m*`, makes no oracle query, and 
 UF-CMVA game with probability 1. The check rejects this degenerate pair.
 
 The check forces correctness to depend on the honest U being nonzero. The honest M
-samples U as a generator, which in a group of prime order is any nonzero element.
-The construction draws a scalar `t ←$ᵗ ℤ_p`, forces it nonzero with `nz t`
+produces a nonzero U, which in a group of prime order is a generator. The
+construction draws a scalar `t ←$ᵗ ℤ_p`, forces it nonzero with `nz t`
 (mapping 0 to 1), and sets `U = nz t • g` for the fixed generator `g`. Since ℤ_p is
 a field, `nz t ≠ 0` and `g ≠ 0` give `nz t • g ≠ 0`, because a module over a field
 has `NoZeroSMulDivisors`. So the honest U is nonzero on every sample, the `U ≠ 0_𝔾`
 check passes, the verification equality holds by construction, and the honest run
 verifies with probability exactly 1.
+
+The map `nz` sends 0 to 1, so the scalar is not uniform over the nonzero elements,
+the value 1 carrying the mass of both 0 and 1. The honest U is therefore a
+generator but not a uniform one. Correctness uses only nonzeroness, not
+uniformity. O24 samples U uniformly among the generators, which needs a uniform
+nonzero scalar. This VCVio version provides no `SampleableType` for the units of
+ℤ_p, so `nz` is the stand-in adequate for correctness, and the uniform version is
+deferred.
 
 Sampling uses VCVio's `$ᵗ`, the uniform distribution over a `SampleableType`. Only
 the scalar field ℤ_p needs that instance, since U is built from a sampled scalar
