@@ -715,3 +715,36 @@ noncomputable def advUFCMVA [DecidableEq 𝕄] [HasEvalSPMF (OracleComp spec)]
 ```
 
 It is `noncomputable` because `evalDist` is.
+
+#### 4.8.6 The unforgeability notion
+
+UF-CMVA security says that no efficient adversary wins the game with more than
+negligible probability. Two pieces make this precise. Negligibility is supplied by
+VCVio's `negligible : (ℕ → ℝ≥0∞) → Prop`, which holds when the function decays
+faster than every inverse polynomial. The advantage `advUFCMVA mac adv` is read as
+a function of the security parameter, `fun secParam => advUFCMVA mac adv secParam`,
+giving exactly the `ℕ → ℝ≥0∞` that `negligible` expects.
+
+Efficiency is the second piece, and it cannot be dropped. Quantifying over every
+adversary makes the notion false for any real message authentication code: an
+adversary with unbounded resources recovers `sk` by exhaustive search and forges
+with certainty, so its advantage is 1, not negligible. The notion must therefore
+range only over efficient adversaries. This model leaves "efficient" as an
+explicit predicate `efficient : ufcmvaAdv mac → Prop` carried as a parameter,
+rather than fixing a particular cost model. A concrete instantiation, for instance
+a polynomial bound on the number of Sign and Verify queries, refines `efficient`
+later without changing the shape of the notion. VCVio's `IsQueryBound` is the
+intended such refinement.
+
+```lean
+/-- UF-CMVA: every efficient adversary forges with negligible advantage. -/
+def Unforgeable [DecidableEq 𝕄] [HasEvalSPMF (OracleComp spec)]
+    (mac : MAC 𝕄 n spec crs sk pp σ) (efficient : ufcmvaAdv mac → Prop) : Prop :=
+  ∀ adv, efficient adv →
+    negligible (fun secParam => advUFCMVA mac adv secParam)
+```
+
+As with correctness (§4.7), `Unforgeable` is an external predicate on a `mac`, not
+a field of the `MAC` structure. A concrete construction such as MAC_GGM is then
+shown to satisfy `Unforgeable` as a theorem, under whatever hardness assumption the
+proof needs.

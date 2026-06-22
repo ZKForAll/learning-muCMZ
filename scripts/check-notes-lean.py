@@ -21,7 +21,8 @@ import tempfile
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Preamble prepended before the extracted blocks. Mathlib supplies ZMod, Fact,
 # AddCommGroup, Module, etc.; ToMathlib.PFunctor.Free supplies VCVio's `FreeM`;
-# the OracleComp modules supply `OracleComp`, `ProbComp`, `evalDist`, `probEvent`.
+# the OracleComp modules supply `OracleComp`, `ProbComp`, `evalDist`, `probEvent`;
+# Asymptotics.Negligible supplies `negligible` for the unforgeability definition.
 # Add `import MuCMZ` here once the notes reference project definitions.
 PREAMBLE = (
     "import Mathlib\n"
@@ -29,6 +30,7 @@ PREAMBLE = (
     "import VCVio.OracleComp.ProbComp\n"
     "import VCVio.OracleComp.EvalDist\n"
     "import VCVio.OracleComp.QueryTracking.LoggingOracle\n"
+    "import VCVio.CryptoFoundations.Asymptotics.Negligible\n"
 )
 
 FENCE = re.compile(r"^```+\s*lean\b", re.IGNORECASE)
