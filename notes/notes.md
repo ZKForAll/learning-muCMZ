@@ -806,7 +806,7 @@ def ggmScalar (n : ℕ) (x0 : ZMod p) (xs m : Fin n → ZMod p) : ZMod p :=
 
 /-- plain MAC_GGM: `sk = (x₀, x)`, `σ = (U, V)` with `U = t • g` for a nonzero `t`
 and `V = (x₀ + Σᵢ xᵢ mᵢ) • U`; verification checks `U ≠ 0` and the equation. -/
-noncomputable def macGGM (n : ℕ) (g : G) (hg : g ≠ 0) :
+noncomputable def macGGM (n : ℕ) (g : G) :
     MAC (ZMod p) n unifSpec Unit ((ZMod p) × (Fin n → ZMod p)) Unit (G × G) where
   S _ := pure ()
   K _ := do
@@ -821,7 +821,7 @@ noncomputable def macGGM (n : ℕ) (g : G) (hg : g ≠ 0) :
     decide (s.1 ≠ 0 ∧ s.2 = ggmScalar n x0 xs m • s.1)
 
 theorem macGGM_correct (n : ℕ) (g : G) (hg : g ≠ 0) :
-    Correct (macGGM (p := p) n g hg) := by
+    Correct (macGGM (p := p) n g) := by
   intro secParam m
   rw [probOutput_eq_one_iff]
   refine ⟨?_, ?_⟩
@@ -842,7 +842,7 @@ Unforgeability is not proved here. With the `U ≠ 0_𝔾` check the degenerate 
 above is rejected, and MAC_GGM is unforgeable in the generic group model
 ([CMZ14](https://doi.org/10.1145/2660267.2660328); see §3.7). A faithful statement
 requires that assumption and a reduction from a forger to a generic-group
-adversary. A bare `theorem macGGM_unforgeable : Unforgeable (macGGM n g hg)
+adversary. A bare `theorem macGGM_unforgeable : Unforgeable (macGGM n g)
 efficient` quantified over an arbitrary `efficient` would be false, since the
 trivial predicate `fun _ => True` then demands negligible advantage from every
 adversary, which exhaustive key search violates. Stating it correctly is deferred
