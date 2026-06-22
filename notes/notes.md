@@ -493,3 +493,36 @@ One simplification remains, shared by both versions. `S` takes only the security
 parameter, while the paper writes `S(1^λ, n)`. Lifting `n` to a parameter keeps a
 single consistent `n` by construction, at the cost of dropping `n` from the
 signature of `S`.
+
+### 4.7 Correctness (work in progress)
+
+Correctness is the first property stated over a `MAC`. The honest run binds `S`,
+`K`, and `M` and returns the verification bit, and correctness says that bit is
+`true` with probability 1, for every security parameter and attribute vector.
+Reading "probability 1" needs the spec to admit a distribution semantics, the
+`HasEvalSPMF (OracleComp spec)` instance, since the probability is read off
+`evalDist`.
+
+```lean
+open OracleComp
+
+/-- one honest execution: generate keys, MAC `m`, return the verification bit -/
+def honestRun {𝕄 : Type} {n : ℕ} {ι : Type} {spec : OracleSpec ι}
+    {crs sk pp σ : Type} (mac : MAC 𝕄 n spec crs sk pp σ)
+    (secParam : ℕ) (m : Fin n → 𝕄) : OracleComp spec Bool := do
+  let crs      ← mac.S secParam
+  let ⟨sk, pp⟩ ← mac.K crs
+  let σ        ← mac.M sk m
+  pure (mac.V sk m σ)
+
+/-- O24 §3.2: an honestly produced tag always verifies -/
+def Correct {𝕄 : Type} {n : ℕ} {ι : Type} {spec : OracleSpec ι}
+    {crs sk pp σ : Type} [HasEvalSPMF (OracleComp spec)]
+    (mac : MAC 𝕄 n spec crs sk pp σ) : Prop :=
+  ∀ secParam (m : Fin n → 𝕄), Pr[= true | honestRun mac secParam m] = 1
+```
+
+`Correct` is a `def` returning `Prop`, the notion, not a theorem. A degenerate
+`mac` whose `V` rejects is a valid inhabitant of the structure, and `Correct` is
+simply `False` for it. A concrete construction discharges correctness as a
+separate theorem, `theorem macGGM_correct : Correct macGGM`.
