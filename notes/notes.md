@@ -749,7 +749,7 @@ not a field of the `MAC` structure. A concrete construction such as MAC_GGM is
 then shown to satisfy `Unforgeable` as a theorem, under whatever hardness
 assumption the proof needs.
 
-### 4.7 MAC_GGM
+### 4.7 Correctness of MAC_GGM
 
 The definitions so far are an interface and two predicates on it. This section
 gives a concrete `MAC` and proves it correct, which establishes that the interface
@@ -844,15 +844,16 @@ unforgeable in the generic group model
 states unforgeability relative to the advantage bound that the generic-group
 analysis provides, rather than constructing the model in Lean.
 
-### 4.8 Unforgeability of MAC_GGM relative to the generic group model
+### 4.8 Unforgeability of MAC_GGM under the generic group model
 
 The generic group model is not constructed here. §3.7 describes it, and building it
 in Lean, with the encoding oracle, the handle algebra, and the reduction to a
 polynomial identity, is a separate development. What that analysis delivers is a
 bound on the UF-CMVA advantage: a generic adversary making a bounded number of
 oracle queries forges with advantage no larger than a quantity the model fixes,
-and that quantity is negligible in the security parameter. This section takes the
-bound as a hypothesis and derives the `Unforgeable` predicate from it.
+and that quantity is negligible in the security parameter. This is the
+generic-group hardness assumption. This section takes it as a hypothesis and
+derives the `Unforgeable` predicate from it.
 
 The derivation needs one general fact. A function dominated pointwise by a
 negligible function is itself negligible. This is `negligible_of_le`, proved from
