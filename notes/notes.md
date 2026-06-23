@@ -131,9 +131,11 @@ Prime order has a consequence worth stating concretely. In this group every
 element other than the identity generates the whole group. Taking the element 16
 and raising it to successive powers modulo 23 gives 16, 3, 2, 9, 6, 4, 18, 12, 8,
 13, and then 1, all eleven elements before returning to the identity. The reason
-is Lagrange's theorem: the order of any element divides the group order 11, and
-since 11 is prime the order is either 1 or 11. Only the identity has order 1, so
-every other element has order 11 and runs through all eleven points. Composite
+is Lagrange's theorem. The order of an element is the smallest positive integer k
+such that combining the element with itself k times gives the identity, and
+Lagrange's theorem says this order divides the group order 11. Since 11 is prime
+the order is either 1 or 11. Only the identity has order 1, so every other element
+has order 11 and runs through all eleven points. Composite
 order would break this. In the ambient group of order 22 the element 22 = −1 has
 order 2, since 22² = 1 modulo 23, so it generates only the proper subgroup
 {1, 22}. Restricting to the prime-order subgroup is what removes such cases.
