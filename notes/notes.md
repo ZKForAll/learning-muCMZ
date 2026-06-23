@@ -91,6 +91,8 @@ proof reduces breaking the scheme to solving that problem.
 
 ## 2. The prime-order group
 
+### 2.1 The group
+
 Everything in μCMZ (O24 §3) builds on one object, a group 𝔾. Picture a fixed collection of
 points with one operation that combines two points into a third. We write this
 operation as addition. One point, 0, does nothing when we add it, and another
@@ -110,6 +112,8 @@ The security comes from a one-way effect. Going forward from a count x to the
 point x • G is fast. Going backward from a point X to the count that produced it
 is infeasible once p is large. That backward problem is the discrete logarithm.
 
+### 2.2 The group in Lean
+
 In Lean we do not run GrGen. We *assume the group exists* and state the following.
 
 ```lean
@@ -122,10 +126,18 @@ group is cyclic and has exactly p points, only when a proof needs them. We do no
 state the hardness of the discrete logarithm here, because it is a separate
 assumption about attackers.
 
+### 2.3 A concrete instance
+
 For experiments we use a small concrete group, a Schnorr group, which we build
 inside the whole numbers mod a prime q, with toy values p = 11, q = 23, and
 generator 4. This is the group shown in §1.2, and it is a prime-order group whose
-order is the prime p = 11. It has exactly eleven points and runs in the computer. 
+order is the prime p = 11. It has exactly eleven points and runs in the computer.
+
+Real systems use elliptic curves such as Ristretto255, which run smaller and faster at real
+sizes but cost much more to build in Lean. The code we write behaves the same
+over either.
+
+### 2.4 Generators and Lagrange's theorem
 
 Prime order has a consequence worth stating concretely. In this group every
 element other than the identity generates the whole group. Taking the element 16
@@ -153,10 +165,6 @@ is a bijection from $\mathbb{Z}_p$ to 𝔾, so distinct scalars give distinct V.
 of small order d would make `s • U` depend only on `s mod d` and collapse distinct
 messages, so the `U ≠ 0_𝔾` check, which in a prime-order group makes U a generator,
 keeps the binding non-degenerate.
-
-Real systems use elliptic curves such as Ristretto255, which run smaller and faster at real
-sizes but cost much more to build in Lean. The code we write behaves the same
-over either.
 
 ## 3. Hardness assumptions (O24 §3.1)
 
