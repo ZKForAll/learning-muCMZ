@@ -246,10 +246,13 @@ A MAC must satisfy correctness and unforgeability. Correctness means an honestly
 produced message authentication code always verifies. Unforgeability means no
 efficient attacker produces a valid message authentication code on a fresh
 attribute list. The paper uses UF-CMVA, unforgeability under a
-chosen-message-and-verification attack (Figure 5), where the attacker calls a
+chosen-message-and-verification attack (O24 Figure 5), where the attacker calls a
 Sign oracle for message authentication codes on chosen attributes and a Verify
-oracle to test them. The Verify oracle grants real power, because the secret key
-both authenticates and verifies. UF-CMVA is a notion, not a proof model, and a proof reaches it for a
+oracle to test them. The name Sign is conventional, carried over from signature
+unforgeability games. The oracle does not sign the attribute vector m with sk in
+the digital-signature sense. It runs the MAC algorithm `M` on `(sk, m)`, returns
+the authentication code σ, and records m for the freshness check. The Verify
+oracle grants real power, because the secret key both authenticates and verifies. UF-CMVA is a notion, not a proof model, and a proof reaches it for a
 concrete scheme in the generic or algebraic group model.
 
 Remark 3.2 notes that algebraic MACs are randomized. You can de-randomize them in
