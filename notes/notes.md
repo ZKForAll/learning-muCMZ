@@ -69,7 +69,7 @@ through eleven residues, 4, 16, 18, 3, 12, 2, 8, 9, 13, 6, and then 1, the
 identity. These eleven residues form a group under multiplication modulo 23, and 4
 is a generator because its powers list every element. In the additive notation
 x•g of this section, x•g is $4^x$ mod 23, so computing x•g is fast while recovering
-x from x•g is the discrete logarithm.
+x from x•g is the discrete logarithm (Sec. #3.1).
 
 ### 1.3 On hardness assumptions
 
@@ -89,9 +89,9 @@ New schemes introduce new assumptions with extra structure, like DDH, q-DL, or
 gap-DL. A designer states the weakest assumption the proof needs, and a security
 proof reduces breaking the scheme to solving that problem.
 
-## 2. The prime-order group (O24 §3)
+## 2. The prime-order group
 
-Everything in μCMZ builds on one object, a group 𝔾. Picture a fixed collection of
+Everything in μCMZ (O24 §3) builds on one object, a group 𝔾. Picture a fixed collection of
 points with one operation that combines two points into a third. We write this
 operation as addition. One point, 0, does nothing when we add it, and another
 point, G, serves as the starting point, the generator. Adding G to itself x times
@@ -129,6 +129,17 @@ order is the prime p = 11. It has exactly eleven points and runs in the computer
 use elliptic curves such as Ristretto255, which run smaller and faster at real
 sizes but cost much more to build in Lean. The code we write behaves the same
 over either.
+
+Prime order has a consequence worth stating concretely. In this group every
+element other than the identity generates the whole group. Taking the element 16
+and raising it to successive powers modulo 23 gives 16, 3, 2, 9, 6, 4, 18, 12, 8,
+13, and then 1, all eleven elements before returning to the identity. The reason
+is Lagrange's theorem: the order of any element divides the group order 11, and
+since 11 is prime the order is either 1 or 11. Only the identity has order 1, so
+every other element has order 11 and runs through all eleven points. Composite
+order would break this. In the ambient group of order 22 the element 22 = −1 has
+order 2, since 22² = 1 modulo 23, so it generates only the proper subgroup
+{1, 22}. Restricting to the prime-order subgroup is what removes such cases.
 
 ## 3. Hardness assumptions (O24 §3.1)
 
