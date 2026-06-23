@@ -96,7 +96,7 @@ other than 0 also works as a generator, so the group hides no smaller groups
 inside it. Exactly one step count reaches each point, so x • G for x = 0, 1, …,
 p − 1 lists every point once. And the step counts behave like ordinary arithmetic
 with addition, subtraction, multiplication, and division, because a prime p makes
-the counts mod p, which we write ℤ_p, a field.
+the counts mod p, which we write $\mathbb{Z}_p$, a field.
 
 The security comes from a one-way effect. Going forward from a count x to the
 point x • G is fast. Going backward from a point X to the count that produced it
@@ -108,7 +108,7 @@ In Lean we do not run GrGen. We *assume the group exists* and state the followin
 variable (p : ℕ) [Fact p.Prime] {G : Type*} [AddCommGroup G] [Module (ZMod p) G] (g : G)
 ```
 
-In words, p is a prime, G is a group we write additively, the counts ℤ_p act on
+In words, p is a prime, G is a group we write additively, the counts $\mathbb{Z}_p$ act on
 it by repeated addition, and g is the generator. We add two extra facts, that the
 group is cyclic and has exactly p points, only when a proof needs them. We do not
 state the hardness of the discrete logarithm here, because it is a separate
@@ -131,7 +131,7 @@ measures each one, a number for how well an attacker does.
 The generator g is public and so is the stepping rule. Given a random point X,
 finding the step count x with x • g = X is infeasible once p is large. Forward,
 from x to X, runs fast. Backward, from X to x, has no known method faster than
-trying counts one by one over ℤ_p.
+trying counts one by one over $\mathbb{Z}_p$.
 
 ### 3.2 Decisional Diffie–Hellman (DDH)
 
@@ -142,7 +142,7 @@ neither compute it nor recognize it.
 
 ### 3.3 Advantage
 
-The advantage measures how much better an attacker does than guessing. For DL it
+The advantage *measures how much better an attacker does than guessing*. For DL it
 is the probability of returning the correct x, which stays near zero for a random
 guess. For DDH the attacker answers a yes or no question, so guessing already
 succeeds half the time, and the advantage is the gap between how often the
@@ -766,8 +766,8 @@ correctness, which establishes that the interface has a demonstrated instance.
 
 #### 4.7.1 Correctness of MAC_GGM
 
-The construction runs over the prime-order group of §2, with scalars ℤ_p. The key
-is `sk = (x₀, x)` with `x₀ ∈ ℤ_p` and the key vector `x` in $\mathbb{Z}_p^n$. The
+The construction runs over the prime-order group of §2, with scalars $\mathbb{Z}_p$. The key
+is `sk = (x₀, x)` with `x₀` in $\mathbb{Z}_p$ and the key vector `x` in $\mathbb{Z}_p^n$. The
 message authentication code on attributes m is the pair `σ = (U, V)`. Here U is a
 random generator of 𝔾 and `V = (x₀ + Σᵢ xᵢ • mᵢ) • U`. Verification recomputes the
 scalar from `sk` and m and checks both `U ≠ 0_𝔾` and `V = (x₀ + Σᵢ xᵢ • mᵢ) • U`.
@@ -783,8 +783,9 @@ UF-CMVA game with probability 1. The check rejects this degenerate pair.
 
 The check forces correctness to depend on the honest U being nonzero. The honest M
 produces a nonzero U, which in a group of prime order is a generator. The
-construction draws a scalar `t ←$ᵗ ℤ_p`, forces it nonzero with `nz t`
-(mapping 0 to 1), and sets `U = nz t • g` for the fixed generator `g`. Since ℤ_p is
+construction draws a scalar `t` uniformly from $\mathbb{Z}_p$, forces it nonzero
+with `nz t` (mapping 0 to 1), and sets `U = nz t • g` for the fixed generator `g`.
+Since $\mathbb{Z}_p$ is
 a field, `nz t ≠ 0` and `g ≠ 0` give `nz t • g ≠ 0`, because a module over a field
 has `NoZeroSMulDivisors`. So the honest U is nonzero on every sample, the `U ≠ 0_𝔾`
 check passes, the verification equality holds by construction, and the honest run
@@ -795,11 +796,11 @@ the value 1 carrying the mass of both 0 and 1. The honest U is therefore a
 generator but not a uniform one. Correctness uses only nonzeroness, not
 uniformity. O24 samples U uniformly among the generators, which needs a uniform
 nonzero scalar. This VCVio version provides no `SampleableType` for the units of
-ℤ_p, so `nz` suffices for correctness, and the uniform version is
+$\mathbb{Z}_p$, so `nz` suffices for correctness, and the uniform version is
 deferred.
 
 Sampling uses VCVio's `$ᵗ`, the uniform distribution over a `SampleableType`. Only
-the scalar field ℤ_p needs that instance, since U is built from a sampled scalar
+the scalar field $\mathbb{Z}_p$ needs that instance, since U is built from a sampled scalar
 rather than drawn from 𝔾 directly. The construction also takes the generator `g`
 with a proof `g ≠ 0`, and `DecidableEq 𝔾` for the verification check. These hold
 for the Schnorr instance of §2.
