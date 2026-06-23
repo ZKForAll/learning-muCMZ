@@ -140,6 +140,20 @@ order would break this. In the ambient group of order 22 the element 22 = −1 h
 order 2, since 22² = 1 modulo 23, so it generates only the proper subgroup
 {1, 22}. Restricting to the prime-order subgroup is what removes such cases.
 
+This property matters for both security and the MAC algebra. For security, a random
+nonzero element always has full order p, so there are no small-order elements in
+tiny subgroups. This blocks small-subgroup attacks, where an adversary confines a
+value to a subgroup of small order, recovers it modulo a small prime, and
+reassembles by the Chinese remainder theorem. Prime order leaves no proper
+nontrivial subgroup to confine a value in, which is the standard reason schemes use
+prime-order groups. It also makes the discrete logarithm equally hard at every
+base, since every nonzero element generates. For the MAC algebra, the value
+`V = s(m) • U` binds the message because, for a fixed nonzero U, the map `s ↦ s • U`
+is a bijection from $\mathbb{Z}_p$ to 𝔾, so distinct scalars give distinct V. A U
+of small order d would make `s • U` depend only on `s mod d` and collapse distinct
+messages, so the `U ≠ 0_𝔾` check, which in a prime-order group makes U a generator,
+keeps the binding non-degenerate.
+
 Real systems use elliptic curves such as Ristretto255, which run smaller and faster at real
 sizes but cost much more to build in Lean. The code we write behaves the same
 over either.
