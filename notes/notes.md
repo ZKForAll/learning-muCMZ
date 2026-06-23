@@ -63,6 +63,14 @@ with a concrete group, a mod-p group or an elliptic curve, without touching the
 protocol or its proofs. We do exactly this below, stating the primitives over an
 abstract prime-order group and instantiating it with a Schnorr group.
 
+A small concrete instance grounds this, the Schnorr group used for experiments in
+§2. Work modulo 23 and take g = 4. Multiplying 4 by itself modulo 23 cycles
+through eleven residues, 4, 16, 18, 3, 12, 2, 8, 9, 13, 6, and then 1, the
+identity. These eleven residues form a group under multiplication modulo 23, and 4
+is a generator because its powers list every element. In the additive notation
+x•g of this section, x•g is $4^x$ mod 23, so computing x•g is fast while recovering
+x from x•g is the discrete logarithm.
+
 ### 1.3 On hardness assumptions
 
 A hardness assumption is a conjecture. A designer picks a problem
@@ -116,7 +124,8 @@ assumption about attackers.
 
 For experiments we use a small concrete group, a Schnorr group, which we build
 inside the whole numbers mod a prime q, with toy values p = 11, q = 23, and
-generator 4. It has exactly eleven points and runs in the computer. Real systems
+generator 4. This is the group shown in §1.2, and it is a prime-order group whose
+order is the prime p = 11. It has exactly eleven points and runs in the computer. Real systems
 use elliptic curves such as Ristretto255, which run smaller and faster at real
 sizes but cost much more to build in Lean. The code we write behaves the same
 over either.
