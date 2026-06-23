@@ -130,6 +130,6 @@ and VCVio preamble, and runs `lake env lean`.
 - [ ] 2a Schnorr Σ-protocol
 - [ ] 2b Linear-relation proofs
 - [ ] 2c Fiat–Shamir → NIZK
-- [ ] 3  Algebraic MAC
+- [x] 3  Algebraic MAC (O24 §3.2) — notes §4: `MAC=(S,K,M,V)`, correctness, UF-CMVA game, and MAC_GGM with correctness proved and unforgeability conditional on the GGM hardness assumption
 - [ ] 4a NIZK syntax + properties
 - [ ] 4b Anonymous-token syntax + OMUF
