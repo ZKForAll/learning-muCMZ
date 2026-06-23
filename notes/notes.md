@@ -125,10 +125,7 @@ assumption about attackers.
 For experiments we use a small concrete group, a Schnorr group, which we build
 inside the whole numbers mod a prime q, with toy values p = 11, q = 23, and
 generator 4. This is the group shown in §1.2, and it is a prime-order group whose
-order is the prime p = 11. It has exactly eleven points and runs in the computer. Real systems
-use elliptic curves such as Ristretto255, which run smaller and faster at real
-sizes but cost much more to build in Lean. The code we write behaves the same
-over either.
+order is the prime p = 11. It has exactly eleven points and runs in the computer. 
 
 Prime order has a consequence worth stating concretely. In this group every
 element other than the identity generates the whole group. Taking the element 16
@@ -140,6 +137,10 @@ every other element has order 11 and runs through all eleven points. Composite
 order would break this. In the ambient group of order 22 the element 22 = −1 has
 order 2, since 22² = 1 modulo 23, so it generates only the proper subgroup
 {1, 22}. Restricting to the prime-order subgroup is what removes such cases.
+
+Real systems use elliptic curves such as Ristretto255, which run smaller and faster at real
+sizes but cost much more to build in Lean. The code we write behaves the same
+over either.
 
 ## 3. Hardness assumptions (O24 §3.1)
 
@@ -946,3 +947,26 @@ non-vacuous instantiation indexes the group by the security parameter, taking a
 family whose order grows, so that the generic-group bound genuinely decays. The
 abstract group of §2 is the right place to add that indexing later. The conditional
 theorem holds in either reading; only its non-vacuous use requires the family.
+
+## Appendix A. Lagrange's theorem
+
+§2 uses Lagrange's theorem to argue that every non-identity element of a
+prime-order group generates the whole group. The theorem states that for a finite
+group `G` and a subgroup `H` of `G`, the order of `H` divides the order of `G`.
+
+Two consequences are the ones §2 relies on. First, the order of an element `x`,
+that is the smallest positive `k` with `k • x = 0`, equals the size of the
+subgroup `⟨x⟩` it generates, so it divides `|G|`. Second, when `|G|` is a prime
+`p`, the divisors of `|G|` are `1` and `p`, so every subgroup has order `1` or `p`.
+The only element generating the order-`1` subgroup is the identity, so every other
+element has order `p` and generates `G`.
+
+Mathlib provides both statements, and the project's toolchain type-checks the
+references below.
+
+```lean
+-- Lagrange's theorem: the order of a subgroup divides the order of the group
+#check @Subgroup.card_subgroup_dvd_card
+-- corollary: the order of an element divides the order of the group
+#check @orderOf_dvd_card
+```
